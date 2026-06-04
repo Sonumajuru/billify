@@ -268,34 +268,34 @@ export default function HomePage() {
 
         {/* ── PREVIEW ── */}
         {showPreview && (
-          <main style={{ flex:1, padding:"24px 28px 60px", overflowY:"auto", background:"transparent" }}>
+          <main style={{ flex:1, padding:"24px 28px 60px", overflowY:"auto", background:"#edf1f7", backgroundImage:"radial-gradient(circle, #c8d3e8 1px, transparent 1px)", backgroundSize:"22px 22px" }}>
             <div className="no-print" style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <span style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:"var(--text3)", fontFamily:"'JetBrains Mono', monospace" }}>// live preview</span>
-                <span style={{ fontSize:11, color: activeMode.color, background:"var(--surface)", padding:"2px 8px", borderRadius:20, border:"1px solid var(--border)", fontFamily:"'JetBrains Mono', monospace" }}>
+                <span style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:"#7a8eac", fontFamily:"'JetBrains Mono', monospace" }}>// live preview</span>
+                <span style={{ fontSize:11, color: activeMode.color, background:"rgba(255,255,255,0.75)", padding:"2px 8px", borderRadius:20, border:"1px solid #c8d3e8", fontFamily:"'JetBrains Mono', monospace" }}>
                   {mode === "invoice" ? invoiceData.templateId : tenancyData.templateId}
                 </span>
               </div>
               <div style={{ display:"flex", gap:6 }}>
                 {mode === "invoice" && (
                   <>
-                    <span style={{ fontSize:11, color:"var(--text3)", background:"var(--surface)", padding:"2px 8px", borderRadius:20, border:"1px solid var(--border)" }}>
+                    <span style={{ fontSize:11, color:"#7a8eac", background:"rgba(255,255,255,0.75)", padding:"2px 8px", borderRadius:20, border:"1px solid #c8d3e8" }}>
                       {invoiceData.docType}
                     </span>
-                    <span style={{ fontSize:11, color:"var(--accent)", background:"var(--accent-dim)", padding:"2px 8px", borderRadius:20, border:"1px solid var(--accent)", fontFamily:"'JetBrains Mono', monospace" }}>
+                    <span style={{ fontSize:11, color:"var(--accent)", background:"rgba(245,158,11,0.12)", padding:"2px 8px", borderRadius:20, border:"1px solid rgba(245,158,11,0.4)", fontFamily:"'JetBrains Mono', monospace" }}>
                       {invoiceData.vatScheme.replace("_"," ")}
                     </span>
                   </>
                 )}
                 {mode === "tenancy" && (
-                  <span style={{ fontSize:11, padding:"2px 8px", borderRadius:20, background: tenancyData.paymentStatus==="Paid"?"var(--green-dim)":"var(--surface)", color: tenancyData.paymentStatus==="Paid"?"var(--green)":"var(--text3)", border:"1px solid var(--border)" }}>
+                  <span style={{ fontSize:11, padding:"2px 8px", borderRadius:20, background: tenancyData.paymentStatus==="Paid"?"rgba(16,185,129,0.12)":"rgba(255,255,255,0.75)", color: tenancyData.paymentStatus==="Paid"?"#059669":"#7a8eac", border: tenancyData.paymentStatus==="Paid"?"1px solid rgba(16,185,129,0.4)":"1px solid #c8d3e8" }}>
                     {tenancyData.paymentStatus}
                   </span>
                 )}
               </div>
             </div>
 
-            <div style={{ filter:"drop-shadow(0 20px 60px rgba(0,0,0,0.4))" }}>
+            <div style={{ filter:"drop-shadow(0 8px 32px rgba(30,50,100,0.18))" }}>
               {mode === "invoice"
                 ? <InvoicePreview data={invoiceData} previewRef={previewRef} />
                 : <TenancyPreview data={tenancyData} previewRef={previewRef} />
