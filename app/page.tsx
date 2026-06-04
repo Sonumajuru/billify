@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   Download, Printer, RefreshCw, Palette, FileText, Eye, EyeOff,
-  Monitor, Home, BookOpen, Save, ChevronDown, Check, Globe,
+  Monitor, Home, BookOpen, ChevronDown, Check, Globe,
 } from "lucide-react";
 import InvoiceForm    from "./invoice/components/FormPanel";
 import InvoiceDesign  from "./invoice/components/DesignPanel";
@@ -15,6 +15,8 @@ import { ITReceiptData, TenancyData, AppMode, SavedDoc, SavedTemplate } from "./
 import { saveDraft as storeAutosave } from "./utils/storage";
 import { calcDueDate } from "./utils/calc";
 import { Lang, T } from "./i18n";
+import { trackDownload } from "./utils/stats";
+import { track } from "@vercel/analytics";
 
 const today = new Date().toISOString().split("T")[0];
 
@@ -107,6 +109,15 @@ export default function HomePage() {
       pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, w, h);
       const num = mode === "invoice" ? invoiceData.docNumber : tenancyData.receiptNumber;
       pdf.save(`${mode}-${num || "001"}.pdf`);
+      // track locally, in Vercel Analytics, and in global Redis store
+      const docType = mode === "invoice" ? invoiceData.docType : "tenancy";
+      trackDownload({ ts: Date.now(), mode, lang, docType });
+      track("download", { mode, lang, docType });
+      fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode, lang, docType }),
+      }).catch(() => { /* silent — never block the download */ });
     } finally {
       if (btn) btn.textContent = tr.downloadPdf;
     }
