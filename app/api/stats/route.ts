@@ -21,8 +21,9 @@ async function redisKeys(url: string, token: string, pattern: string): Promise<s
 }
 
 export async function GET(req: NextRequest) {
-  const redisUrl   = process.env.UPSTASH_REDIS_REST_URL;
-  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  // Vercel KV uses KV_REST_API_URL / KV_REST_API_TOKEN
+  const redisUrl   = process.env.KV_REST_API_URL   || process.env.UPSTASH_REDIS_REST_URL;
+  const redisToken = process.env.KV_REST_API_TOKEN  || process.env.UPSTASH_REDIS_REST_TOKEN;
   const statsKey   = process.env.STATS_SECRET_KEY;
 
   // Optional secret protection — add STATS_SECRET_KEY env var to lock the route
