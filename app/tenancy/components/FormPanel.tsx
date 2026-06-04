@@ -84,6 +84,26 @@ export default function FormPanel({ data, onChange, lang }: Props) {
       {/* ── LANDLORD ── */}
       <Section title={tr.landlordSection} defaultOpen accent>
         <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={handleLogo} />
+
+        {/* Logo — always visible */}
+        <div>
+          {lbl(tr.logo)}
+          {data.logo ? (
+            <div style={{ position:"relative", display:"inline-flex" }}>
+              <img src={data.logo} alt="" style={{ height:48, objectFit:"contain", borderRadius:8, border:"1px solid var(--border)", background:"var(--surface)", padding:6 }} />
+              <button onClick={()=>set("logo","")} style={{ position:"absolute", top:-6, right:-6, width:20, height:20, borderRadius:"50%", background:"#ef4444", color:"#fff", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><X size={10}/></button>
+              <button onClick={()=>logoRef.current?.click()} style={{ position:"absolute", bottom:-6, right:-6, width:22, height:22, borderRadius:"50%", background:"var(--accent)", color:"#fff", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><ImagePlus size={10}/></button>
+            </div>
+          ) : (
+            <button onClick={()=>logoRef.current?.click()} style={{ width:"100%", display:"flex", alignItems:"center", gap:8, padding:"9px 12px", border:"2px dashed var(--border2)", borderRadius:10, background:"var(--surface)", cursor:"pointer", transition:"border-color .15s" }}
+              onMouseEnter={e=>e.currentTarget.style.borderColor="var(--accent)"}
+              onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border2)"}>
+              <Upload size={15} color="var(--text3)" />
+              <span style={{ fontSize:12, color:"var(--text3)" }}>{tr.uploadLogo}</span>
+            </button>
+          )}
+        </div>
+
         <div style={g2}>
           <div className="col-span-2">
             {lbl(tr.landlordName)}
@@ -103,24 +123,6 @@ export default function FormPanel({ data, onChange, lang }: Props) {
 
         {advLandlord && (
           <div style={{ display:"flex", flexDirection:"column", gap:10 }} className="section-open">
-            {/* Logo */}
-            <div>
-              {lbl(tr.logo)}
-              {data.logo ? (
-                <div style={{ position:"relative", display:"inline-flex" }} className="group">
-                  <img src={data.logo} alt="" style={{ height:48, objectFit:"contain", borderRadius:8, border:"1px solid var(--border)", background:"var(--surface)", padding:6 }} />
-                  <button onClick={()=>set("logo","")} style={{ position:"absolute", top:-6, right:-6, width:20, height:20, borderRadius:"50%", background:"#ef4444", color:"#fff", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><X size={10}/></button>
-                  <button onClick={()=>logoRef.current?.click()} style={{ position:"absolute", bottom:-6, right:-6, width:22, height:22, borderRadius:"50%", background:"var(--accent)", color:"#fff", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><ImagePlus size={10}/></button>
-                </div>
-              ) : (
-                <button onClick={()=>logoRef.current?.click()} style={{ width:"100%", display:"flex", flexDirection:"column", alignItems:"center", gap:6, padding:"12px", border:"2px dashed var(--border2)", borderRadius:10, background:"var(--surface)", cursor:"pointer", transition:"border-color .15s" }}
-                  onMouseEnter={e=>e.currentTarget.style.borderColor="var(--accent)"}
-                  onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border2)"}>
-                  <Upload size={16} color="var(--text3)" />
-                  <span style={{ fontSize:11, color:"var(--text3)" }}>{tr.uploadLogo}</span>
-                </button>
-              )}
-            </div>
             <div style={g2}>
               <div className="col-span-2">
                 {lbl(tr.landlordCompany)}
