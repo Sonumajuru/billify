@@ -15,8 +15,9 @@ async function incr(url: string, token: string, key: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const redisUrl   = process.env.UPSTASH_REDIS_REST_URL;
-  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  // Vercel KV uses KV_REST_API_URL / KV_REST_API_TOKEN
+  const redisUrl   = process.env.KV_REST_API_URL   || process.env.UPSTASH_REDIS_REST_URL;
+  const redisToken = process.env.KV_REST_API_TOKEN  || process.env.UPSTASH_REDIS_REST_TOKEN;
 
   // Graceful no-op if env vars not configured yet
   if (!redisUrl || !redisToken) {
