@@ -148,6 +148,27 @@ export const T = {
     docProforma: "Pro Forma Invoice",
     docCredit: "Credit Note",
     docReceipt: "Receipt",
+
+    // Preview / PDF — Invoice
+    pDocInvoice:"INVOICE", pDocQuote:"QUOTE", pDocProforma:"PRO FORMA INVOICE", pDocCredit:"CREDIT NOTE", pDocReceipt:"RECEIPT",
+    pFrom:"From", pBillTo:"Bill To", pTo:"To",
+    pPaymentDetails:"Payment Details", pAccName:"Acc. name:", pMethod:"Method:", pDueDate:"Due date:", pTerms:"Terms:", pRef:"Ref.:",
+    pSubtotal:"Subtotal (excl. VAT)", pDiscount:"Discount", pTaxGroup:"VAT", pTotal:"Total (incl. VAT)",
+    pVatReversed:"VAT reverse charged – art. 12 OB Act 1968", pVatExempt:"Exempt from VAT",
+    pIntraCommunity:"Intra-community supply – VAT reverse charged to",
+    pSignatureProvider:"Service Provider", pSignatureClient:"Client",
+    pProject:"Project", pTech:"Technology", pPeriod:"Period",
+    pCodeFrom:"from", pCodeBillTo:"bill_to", pCodeProject:"project",
+
+    // Preview / PDF — Tenancy
+    pTenancyReceipt:"Tenancy Receipt", pRentReceipt:"Rent Receipt", pOfficialReceipt:"Official Receipt",
+    pReceivedFrom:"Received From", pForProperty:"For Property", pTenantDetails:"Tenant Details", pPropertyDetails:"Property Details",
+    pTenantLabel:"Tenant", pPropertyLabel:"Property",
+    pMonthlyRent:"Monthly Rent", pTotalPaid:"Total Amount Paid", pTotalPaidShort:"Total Paid", pTotalPaidFormal:"TOTAL PAID",
+    pPaymentMethodLabel:"Payment Method:", pPaidOn:"Paid On:", pPaidVia:"Via:", pOn:"On:",
+    pLandlord:"Landlord", pTenant:"Tenant", pSignatureSuffix:"Signature",
+    pTermsLabel:"Terms:", pIssuedLabel:"Issued:", pDateIssued:"Date Issued:", pPaymentDateLabel:"Payment Date:",
+    pLateFee:"Late Fee", pParkingFee:"Parking Fee", pSecurityDeposit:"Security Deposit",
   },
 
   fr: {
@@ -280,6 +301,25 @@ export const T = {
     docProforma: "Facture proforma",
     docCredit: "Avoir",
     docReceipt: "Reçu",
+
+    pDocInvoice:"FACTURE", pDocQuote:"DEVIS", pDocProforma:"FACTURE PROFORMA", pDocCredit:"AVOIR", pDocReceipt:"REÇU",
+    pFrom:"De", pBillTo:"Facturer à", pTo:"À",
+    pPaymentDetails:"Détails de paiement", pAccName:"Titulaire:", pMethod:"Mode:", pDueDate:"Échéance:", pTerms:"Conditions:", pRef:"Réf.:",
+    pSubtotal:"Sous-total (HT)", pDiscount:"Remise", pTaxGroup:"TVA", pTotal:"Total (TTC)",
+    pVatReversed:"TVA autoliquidée – art. 12 OB", pVatExempt:"Exonéré de TVA",
+    pIntraCommunity:"Livraison intracommunautaire – TVA autoliquidée à",
+    pSignatureProvider:"Prestataire", pSignatureClient:"Client",
+    pProject:"Projet", pTech:"Technologie", pPeriod:"Période",
+    pCodeFrom:"de", pCodeBillTo:"facturer_à", pCodeProject:"projet",
+
+    pTenancyReceipt:"Quittance de loyer", pRentReceipt:"Reçu de loyer", pOfficialReceipt:"Reçu officiel",
+    pReceivedFrom:"Reçu de", pForProperty:"Pour le bien", pTenantDetails:"Infos locataire", pPropertyDetails:"Infos bien",
+    pTenantLabel:"Locataire", pPropertyLabel:"Bien",
+    pMonthlyRent:"Loyer mensuel", pTotalPaid:"Total versé", pTotalPaidShort:"Total payé", pTotalPaidFormal:"TOTAL PAYÉ",
+    pPaymentMethodLabel:"Mode de paiement:", pPaidOn:"Payé le:", pPaidVia:"Via:", pOn:"Le:",
+    pLandlord:"Propriétaire", pTenant:"Locataire", pSignatureSuffix:"Signature",
+    pTermsLabel:"Conditions:", pIssuedLabel:"Émis le:", pDateIssued:"Date d'émission:", pPaymentDateLabel:"Date de paiement:",
+    pLateFee:"Majoration retard", pParkingFee:"Parking", pSecurityDeposit:"Dépôt de garantie",
   },
 
   nl: {
@@ -412,6 +452,25 @@ export const T = {
     docProforma: "Pro-formafactuur",
     docCredit: "Creditnota",
     docReceipt: "Kwitantie",
+
+    pDocInvoice:"FACTUUR", pDocQuote:"OFFERTE", pDocProforma:"PROFORMAFACTUUR", pDocCredit:"CREDITNOTA", pDocReceipt:"KWITANTIE",
+    pFrom:"Van", pBillTo:"Factuur aan", pTo:"Aan",
+    pPaymentDetails:"Betalingsgegevens", pAccName:"Rekeninghouder:", pMethod:"Methode:", pDueDate:"Vervaldatum:", pTerms:"Voorwaarden:", pRef:"Ref.:",
+    pSubtotal:"Subtotaal (excl. BTW)", pDiscount:"Korting", pTaxGroup:"BTW", pTotal:"Totaal (incl. BTW)",
+    pVatReversed:"BTW verlegd – art. 12 OB 1968", pVatExempt:"Vrijgesteld van BTW",
+    pIntraCommunity:"Intracommunautaire levering – BTW verlegd naar",
+    pSignatureProvider:"Dienstverlener", pSignatureClient:"Klant",
+    pProject:"Project", pTech:"Technologie", pPeriod:"Periode",
+    pCodeFrom:"van", pCodeBillTo:"factuur_aan", pCodeProject:"project",
+
+    pTenancyReceipt:"Huurkwitantie", pRentReceipt:"Huurontvangst", pOfficialReceipt:"Officieel bewijs",
+    pReceivedFrom:"Ontvangen van", pForProperty:"Voor woning", pTenantDetails:"Huurdergegevens", pPropertyDetails:"Woninggegevens",
+    pTenantLabel:"Huurder", pPropertyLabel:"Woning",
+    pMonthlyRent:"Maandhuur", pTotalPaid:"Totaal betaald", pTotalPaidShort:"Totaal betaald", pTotalPaidFormal:"TOTAAL BETAALD",
+    pPaymentMethodLabel:"Betaalmethode:", pPaidOn:"Betaald op:", pPaidVia:"Via:", pOn:"Op:",
+    pLandlord:"Verhuurder", pTenant:"Huurder", pSignatureSuffix:"Handtekening",
+    pTermsLabel:"Voorwaarden:", pIssuedLabel:"Uitgegeven:", pDateIssued:"Uitgieftedatum:", pPaymentDateLabel:"Betaaldatum:",
+    pLateFee:"Boete te laat", pParkingFee:"Parkeerkosten", pSecurityDeposit:"Borg",
   },
 } as const;
 

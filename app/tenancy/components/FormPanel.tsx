@@ -38,7 +38,7 @@ function Section({ title, children, defaultOpen = true, accent = false }: {
         onClick={() => setOpen(v => !v)}
         style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", background:"var(--surface2)", border:"none", cursor:"pointer", fontFamily:"inherit" }}
       >
-        <span style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color: accent ? "var(--accent)" : "var(--text2)" }}>{title}</span>
+        <span style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:"var(--accent)" }}>{title}</span>
         <ChevronDown size={14} color="var(--text3)" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition:"transform .2s" }} />
       </button>
       {open && (

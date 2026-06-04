@@ -172,9 +172,7 @@ export default function HomePage() {
 
         {/* Logo */}
         <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
-          <div style={{ width:30, height:30, borderRadius:8, background:"linear-gradient(135deg, var(--accent), #d97706)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <FileText size={15} color="#fff" />
-          </div>
+          <img src="/logo.svg" alt="Billify" style={{ width:30, height:30, borderRadius:8 }} />
           <span style={{ fontWeight:800, fontSize:16, color:"var(--text)", letterSpacing:-0.5, fontFamily:"'JetBrains Mono', monospace" }}>
             Bill<span style={{ color:"var(--accent)" }}>ify</span>
           </span>
@@ -336,8 +334,8 @@ export default function HomePage() {
 
             <div style={{ filter:"drop-shadow(0 8px 32px rgba(30,50,100,0.12))" }}>
               {mode === "invoice"
-                ? <InvoicePreview data={invoiceData} previewRef={previewRef} />
-                : <TenancyPreview data={tenancyData} previewRef={previewRef} />
+                ? <InvoicePreview data={invoiceData} previewRef={previewRef} lang={lang} />
+                : <TenancyPreview data={tenancyData} previewRef={previewRef} lang={lang} />
               }
             </div>
           </main>

@@ -2,8 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Billify — Invoice & Tenancy Receipt Generator",
-  description: "Professional IT invoices and tenancy receipts. VAT 21%/9%/0%, KvK, IBAN, 6 templates, save & resume.",
+  title: "Billify — Invoice & Receipt Generator",
+  description: "Create professional invoices and tenancy receipts in EN, FR & NL. VAT, KvK, IBAN, 6 templates, PDF export.",
+  icons: {
+    icon: [
+      { url: "/logo.svg", type: "image/svg+xml" },
+    ],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

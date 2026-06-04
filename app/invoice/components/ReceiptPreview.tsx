@@ -2,19 +2,13 @@
 import React from "react";
 import { ITReceiptData, LineItem } from "../../types";
 import { calcITTotals, lineExcl, lineVat, fmtDate, fmtDateShort, fmtMoney as fmtMoney } from "../../utils/calc";
+import { Lang, T, Tr } from "../../i18n";
 
 interface Props {
   data: ITReceiptData;
   previewRef: React.RefObject<HTMLDivElement | null>;
+  lang?: Lang;
 }
-
-const DOC_LABELS: Record<string, string> = {
-  invoice:     "INVOICE",
-  quote:       "QUOTE",
-  proforma:    "PRO FORMA INVOICE",
-  credit_note: "CREDIT NOTE",
-  receipt:     "RECEIPT",
-};
 
 const STATUS_STYLE: Record<string, { bg: string; color: string; border: string }> = {
   Draft:         { bg: "#1c2330",  color: "#8b949e", border: "#30363d" },
@@ -25,9 +19,9 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; border: string }
   Cancelled:     { bg: "#1c1c1c",  color: "#6e7681", border: "#30363d" },
 };
 
-/** Shared BTW spec block — rendered on every template */
-function BtwBlock({ data, accent, muted, border, bg2, sym }: {
-  data: ITReceiptData; accent: string; muted: string; border: string; bg2: string; sym: string;
+/** Shared totals block */
+function BtwBlock({ data, accent, muted, border, bg2, sym, tr }: {
+  data: ITReceiptData; accent: string; muted: string; border: string; bg2: string; sym: string; tr: Tr;
 }) {
   const { subtotalExcl, discount, afterDiscount, vatGroups, totalVat, totalIncl } = calcITTotals(data);
   const fmt = (n: number) => fmtMoney(n, sym);
@@ -39,45 +33,44 @@ function BtwBlock({ data, accent, muted, border, bg2, sym }: {
       <div style={{ width: 300 }}>
         <div style={{ padding: "14px 16px", background: bg2, borderRadius: 10, border: `1px solid ${border}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13, color: muted, borderBottom: `1px solid ${border}` }}>
-            <span>Subtotal (excl. VAT)</span>
+            <span>{tr.pSubtotal}</span>
             <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{fmt(subtotalExcl)}</span>
           </div>
 
           {discount > 0 && (
             <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13, color: "#dc2626", borderBottom: `1px solid ${border}` }}>
-              <span>Discount{data.discountType === "percent" ? ` (${data.discount}%)` : ""}</span>
+              <span>{tr.pDiscount}{data.discountType === "percent" ? ` (${data.discount}%)` : ""}</span>
               <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>−{fmt(discount)}</span>
             </div>
           )}
 
-          {/* BTW per tarief */}
           {!isVerlegd && !isVrijgesteld && vatGroups.map(g => (
             <div key={g.rate} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13, color: muted, borderBottom: `1px solid ${border}` }}>
-              <span>BTW {g.rate}% over {fmt(g.base - (discount > 0 ? discount * g.base / subtotalExcl : 0))}</span>
+              <span>{tr.pTaxGroup} {g.rate}% {fmt(g.base - (discount > 0 ? discount * g.base / subtotalExcl : 0))}</span>
               <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{fmt(g.vat)}</span>
             </div>
           ))}
 
           {isVerlegd && (
             <div style={{ padding: "6px 0", fontSize: 12, color: accent, fontStyle: "italic", borderBottom: `1px solid ${border}` }}>
-              VAT reverse charged – art. 12 OB Act 1968
+              {tr.pVatReversed}
             </div>
           )}
 
           {isVrijgesteld && (
             <div style={{ padding: "6px 0", fontSize: 12, color: muted, fontStyle: "italic", borderBottom: `1px solid ${border}` }}>
-              Exempt from VAT
+              {tr.pVatExempt}
             </div>
           )}
 
           {data.vatScheme === "eu_vat" && data.clientBtw && (
             <div style={{ padding: "6px 0", fontSize: 12, color: accent, fontStyle: "italic", borderBottom: `1px solid ${border}` }}>
-              Intra-community supply – VAT reverse charged to {data.clientBtw}
+              {tr.pIntraCommunity} {data.clientBtw}
             </div>
           )}
 
           <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0 4px", fontSize: 16, fontWeight: 800, color: accent }}>
-            <span>Total (incl. VAT)</span>
+            <span>{tr.pTotal}</span>
             <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 22 }}>{fmt(totalIncl)}</span>
           </div>
         </div>
@@ -86,8 +79,8 @@ function BtwBlock({ data, accent, muted, border, bg2, sym }: {
   );
 }
 
-function ItemsTable({ data, accent, muted, border, bg2, sym }: {
-  data: ITReceiptData; accent: string; muted: string; border: string; bg2: string; sym: string;
+function ItemsTable({ data, accent, muted, border, bg2, sym, tr }: {
+  data: ITReceiptData; accent: string; muted: string; border: string; bg2: string; sym: string; tr: Tr;
 }) {
   const fmt = (n: number) => fmtMoney(n, sym);
   const showVat = data.vatScheme === "standard" || data.vatScheme === "eu_vat";
@@ -96,7 +89,7 @@ function ItemsTable({ data, accent, muted, border, bg2, sym }: {
     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
       <thead>
         <tr style={{ background: bg2 }}>
-          {["Description", "Cat.", "Qty", "Rate", ...(showVat ? ["VAT%","VAT"] : []), "Total excl."].map((h, i) => (
+          {["Description", "Cat.", tr.qty, tr.rate, ...(showVat ? [tr.vatPct, tr.pTaxGroup] : []), "Total excl."].map((h, i) => (
             <th key={h} style={{ padding: "8px 10px", textAlign: i < 2 ? "left" : "right", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: accent, borderBottom: `1px solid ${border}`, whiteSpace: "nowrap" }}>{h}</th>
           ))}
         </tr>
@@ -160,26 +153,25 @@ function PartyBlock({ label, name, company, address, postcode, city, country, em
   );
 }
 
-function PaymentBlock({ data, accent, muted, border, bg2, sym }: {
-  data: ITReceiptData; accent: string; muted: string; border: string; bg2: string; sym: string;
+function PaymentBlock({ data, accent, muted, border, bg2, tr }: {
+  data: ITReceiptData; accent: string; muted: string; border: string; bg2: string; tr: Tr;
 }) {
-  const { totalIncl } = calcITTotals(data);
   if (!data.iban && !data.paymentNotes) return null;
   return (
     <div style={{ marginTop: 18, padding: "14px 16px", background: bg2, borderRadius: 10, border: `1px solid ${border}` }}>
-      <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: accent, marginBottom: 10 }}>Payment Details</div>
+      <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: accent, marginBottom: 10 }}>{tr.pPaymentDetails}</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, fontSize: 12, color: muted }}>
         <div>
-          {data.iban       && <div style={{ marginBottom: 3 }}><strong style={{ color: "inherit" }}>IBAN:</strong> <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{data.iban}</span></div>}
-          {data.bic        && <div style={{ marginBottom: 3 }}><strong style={{ color: "inherit" }}>BIC:</strong> <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{data.bic}</span></div>}
-          {data.bankName   && <div style={{ marginBottom: 3 }}><strong style={{ color: "inherit" }}>Bank:</strong> {data.bankName}</div>}
-          {data.providerName && <div><strong style={{ color: "inherit" }}>Acc. name:</strong> {data.providerName || data.providerName}</div>}
+          {data.iban       && <div style={{ marginBottom: 3 }}><strong>IBAN:</strong> <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{data.iban}</span></div>}
+          {data.bic        && <div style={{ marginBottom: 3 }}><strong>BIC:</strong> <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{data.bic}</span></div>}
+          {data.bankName   && <div style={{ marginBottom: 3 }}><strong>Bank:</strong> {data.bankName}</div>}
+          {data.providerName && <div><strong>{tr.pAccName}</strong> {data.providerName}</div>}
         </div>
         <div>
-          {data.paymentMethod && <div style={{ marginBottom: 3 }}><strong style={{ color: "inherit" }}>Method:</strong> {data.paymentMethod}</div>}
-          {data.dueDate       && <div style={{ marginBottom: 3 }}><strong style={{ color: "inherit" }}>Due date:</strong> {fmtDateShort(data.dueDate)}</div>}
-          {data.paymentTermDays && <div style={{ marginBottom: 3 }}><strong style={{ color: "inherit" }}>Terms:</strong> {data.paymentTermDays} dagen</div>}
-          <div><strong style={{ color: "inherit" }}>Ref.:</strong> <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{data.docNumber}</span></div>
+          {data.paymentMethod && <div style={{ marginBottom: 3 }}><strong>{tr.pMethod}</strong> {data.paymentMethod}</div>}
+          {data.dueDate       && <div style={{ marginBottom: 3 }}><strong>{tr.pDueDate}</strong> {fmtDateShort(data.dueDate)}</div>}
+          {data.paymentTermDays && <div style={{ marginBottom: 3 }}><strong>{tr.pTerms}</strong> {data.paymentTermDays} {tr.days}</div>}
+          <div><strong>{tr.pRef}</strong> <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{data.docNumber}</span></div>
         </div>
       </div>
       {data.paymentNotes && <div style={{ marginTop: 8, fontSize: 11, color: muted, lineHeight: 1.7 }}>{data.paymentNotes}</div>}
@@ -200,14 +192,19 @@ function LegalFooterLine({ data, muted, accent }: { data: ITReceiptData; muted: 
   );
 }
 
-export default function ReceiptPreview({ data, previewRef }: Props) {
-  const sym    = data.currencySymbol || "€";
-  const tid    = data.templateId;
-  const st     = data.docStatus || "Concept";
-  const sts    = STATUS_STYLE[st] || STATUS_STYLE.Concept;
-  const docLbl = DOC_LABELS[data.docType] || "FACTUUR";
+export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props) {
+  const tr  = T[lang] as Tr;
+  const sym = data.currencySymbol || "€";
+  const tid = data.templateId;
+  const st  = data.docStatus || "Draft";
+  const sts = STATUS_STYLE[st] || STATUS_STYLE.Draft;
+  const DOC_LABEL_MAP: Record<string, string> = {
+    invoice: tr.pDocInvoice, quote: tr.pDocQuote,
+    proforma: tr.pDocProforma, credit_note: tr.pDocCredit, receipt: tr.pDocReceipt,
+  };
+  const docLbl = DOC_LABEL_MAP[data.docType] || tr.pDocInvoice;
   const { totalIncl } = calcITTotals(data);
-  const fmt    = (n: number) => fmtMoney(n, sym);
+  const fmt = (n: number) => fmtMoney(n, sym);
 
   const providerAddrLine = [data.providerAddress, [data.providerPostcode, data.providerCity].filter(Boolean).join(" ")].filter(Boolean).join(", ");
   const clientAddrLine   = [data.clientAddress,   [data.clientPostcode,   data.clientCity  ].filter(Boolean).join(" ")].filter(Boolean).join(", ");
@@ -280,11 +277,11 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
 
           {/* Items */}
           <div style={{ marginBottom: 16, borderRadius: 8, overflow: "hidden", border: `1px solid ${border}` }}>
-            <ItemsTable data={data} sym={sym} accent={ac} muted={muted} border={border} bg2={bg2} />
+            <ItemsTable data={data} sym={sym} accent={ac} muted={muted} border={border} bg2={bg2} tr={tr} />
           </div>
 
-          <BtwBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} />
-          <PaymentBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} />
+          <BtwBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} tr={tr} />
+          <PaymentBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} tr={tr} />
 
           {(data.notes || data.terms) && (
             <div style={{ display: "grid", gridTemplateColumns: data.notes && data.terms ? "1fr 1fr" : "1fr", gap: 12, marginTop: 18 }}>
@@ -345,8 +342,8 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
           <div style={{ height: 1, background: border, marginBottom: 26 }} />
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 26 }}>
-            <PartyBlock label="From" name={data.providerName} company={data.providerCompany} address={data.providerAddress} postcode={data.providerPostcode} city={data.providerCity} country="" email={data.providerEmail} phone={data.providerPhone} kvk={data.kvkNumber} btw={data.btwNumber} accent={ac} muted={muted} tx={tx} />
-            <PartyBlock label="Bill To" name={data.clientName} company={data.clientCompany} address={data.clientAddress} postcode={data.clientPostcode} city={data.clientCity} country={data.clientCountry !== "Nederland" ? data.clientCountry : ""} email={data.clientEmail} phone={data.clientPhone} kvk={data.clientKvk} btw={data.clientBtw} accent={ac} muted={muted} tx={tx} />
+            <PartyBlock label={tr.pFrom} name={data.providerName} company={data.providerCompany} address={data.providerAddress} postcode={data.providerPostcode} city={data.providerCity} country="" email={data.providerEmail} phone={data.providerPhone} kvk={data.kvkNumber} btw={data.btwNumber} accent={ac} muted={muted} tx={tx} />
+            <PartyBlock label={tr.pBillTo} name={data.clientName} company={data.clientCompany} address={data.clientAddress} postcode={data.clientPostcode} city={data.clientCity} country={data.clientCountry !== "Nederland" ? data.clientCountry : ""} email={data.clientEmail} phone={data.clientPhone} kvk={data.clientKvk} btw={data.clientBtw} accent={ac} muted={muted} tx={tx} />
           </div>
 
           {(data.projectName || data.techStack) && (
@@ -358,11 +355,11 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
           )}
 
           <div style={{ borderRadius: 8, overflow: "hidden", border: `1px solid ${border}`, marginBottom: 18 }}>
-            <ItemsTable data={data} sym={sym} accent={ac} muted={muted} border={border} bg2={bg2} />
+            <ItemsTable data={data} sym={sym} accent={ac} muted={muted} border={border} bg2={bg2} tr={tr} />
           </div>
 
-          <BtwBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} />
-          <PaymentBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} />
+          <BtwBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} tr={tr} />
+          <PaymentBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} tr={tr} />
 
           {(data.notes || data.terms) && (
             <div style={{ display: "grid", gridTemplateColumns: data.notes && data.terms ? "1fr 1fr" : "1fr", gap: 12, marginTop: 18 }}>
@@ -432,10 +429,10 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
             {data.techStack && <span><span style={{ color: muted }}> — stack: </span><span style={{ color: "#d2a8ff" }}>[{data.techStack}]</span></span>}
           </div>}
           <div style={{ borderRadius: 8, overflow: "hidden", border: `1px solid ${border}`, marginBottom: 14 }}>
-            <ItemsTable data={data} sym={sym} accent={ac} muted={muted} border={border} bg2={bg2} />
+            <ItemsTable data={data} sym={sym} accent={ac} muted={muted} border={border} bg2={bg2} tr={tr} />
           </div>
-          <BtwBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} />
-          <PaymentBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} />
+          <BtwBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} tr={tr} />
+          <PaymentBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} tr={tr} />
           {data.notes && <div style={{ marginTop: 14, padding: "10px 12px", background: bg2, borderRadius: 8, border: `1px solid ${border}`, borderLeft: `2px solid ${ac}`, fontSize: 11, color: muted, lineHeight: 1.7 }}>{data.notes}</div>}
           {data.showSignature && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 22 }}>{[data.providerName || "Service Provider", data.clientName || "Client"].map(n => <div key={n}><div style={{ height: 1, background: border, marginBottom: 5 }} /><div style={{ fontSize: 10, color: muted, fontFamily: "'JetBrains Mono', monospace" }}>{n}</div></div>)}</div>}
           <div style={{ marginTop: 18, paddingTop: 10, borderTop: `1px solid ${border}`, textAlign: "center" }}><LegalFooterLine data={data} muted={muted} accent={ac} /></div>
@@ -486,10 +483,10 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
             <div style={{ padding: "7px 12px", background: bg2, borderBottom: `1px solid ${border}` }}>
               <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: ac, letterSpacing: "0.15em" }}>WORK_ITEMS[]</span>
             </div>
-            <ItemsTable data={data} sym={sym} accent={ac} muted={muted} border={border} bg2={bg2} />
+            <ItemsTable data={data} sym={sym} accent={ac} muted={muted} border={border} bg2={bg2} tr={tr} />
           </div>
-          <BtwBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} />
-          <PaymentBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} />
+          <BtwBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} tr={tr} />
+          <PaymentBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} tr={tr} />
           {data.notes && <div style={{ marginTop: 14, border: `1px solid ${border}`, borderRadius: 8, padding: "10px 12px" }}><div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, color: ac, marginBottom: 5 }}>NOTES</div><div style={{ fontSize: 11, color: muted, lineHeight: 1.7 }}>{data.notes}</div></div>}
           {data.showSignature && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 22 }}>{[data.providerName || "Service Provider", data.clientName || "Client"].map(n => <div key={n}><div style={{ height: 1, background: border, marginBottom: 5 }} /><div style={{ fontSize: 10, color: muted, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.08em" }}>{n.toUpperCase()}</div></div>)}</div>}
           <div style={{ marginTop: 16, paddingTop: 10, borderTop: `1px solid ${border}`, textAlign: "center" }}><LegalFooterLine data={data} muted={muted} accent={ac} /></div>
@@ -521,8 +518,8 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, marginBottom: 32 }}>
-            <PartyBlock label="From" name={data.providerName} company={data.providerCompany} address={data.providerAddress} postcode={data.providerPostcode} city={data.providerCity} country="" email={data.providerEmail} phone={data.providerPhone} kvk={data.kvkNumber} btw={data.btwNumber} accent={ac} muted={muted} tx={tx} />
-            <PartyBlock label="To" name={data.clientName} company={data.clientCompany} address={data.clientAddress} postcode={data.clientPostcode} city={data.clientCity} country={data.clientCountry !== "Nederland" ? data.clientCountry : ""} email={data.clientEmail} phone={data.clientPhone} kvk={data.clientKvk} btw={data.clientBtw} accent={ac} muted={muted} tx={tx} />
+            <PartyBlock label={tr.pFrom} name={data.providerName} company={data.providerCompany} address={data.providerAddress} postcode={data.providerPostcode} city={data.providerCity} country="" email={data.providerEmail} phone={data.providerPhone} kvk={data.kvkNumber} btw={data.btwNumber} accent={ac} muted={muted} tx={tx} />
+            <PartyBlock label={tr.pTo} name={data.clientName} company={data.clientCompany} address={data.clientAddress} postcode={data.clientPostcode} city={data.clientCity} country={data.clientCountry !== "Nederland" ? data.clientCountry : ""} email={data.clientEmail} phone={data.clientPhone} kvk={data.clientKvk} btw={data.clientBtw} accent={ac} muted={muted} tx={tx} />
           </div>
           {data.projectName && <div style={{ marginBottom: 24, paddingBottom: 14, borderBottom: `1px solid ${border}`, fontSize: 13 }}>
             <span style={{ color: muted }}>Project: </span><span style={{ fontWeight: 600, color: tx }}>{data.projectName}</span>
@@ -530,10 +527,10 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
             {data.techStack && <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: tx }}>{data.techStack}</span>}
           </div>}
           <div style={{ border: `1px solid ${border}`, borderRadius: 8, overflow: "hidden", marginBottom: 18 }}>
-            <ItemsTable data={data} sym={sym} accent={ac} muted={muted} border={border} bg2={bg2} />
+            <ItemsTable data={data} sym={sym} accent={ac} muted={muted} border={border} bg2={bg2} tr={tr} />
           </div>
-          <BtwBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} />
-          <PaymentBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} />
+          <BtwBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} tr={tr} />
+          <PaymentBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} tr={tr} />
           {data.notes && <div style={{ marginTop: 22, fontSize: 12, color: muted, lineHeight: 1.8 }}>{data.notes}</div>}
           {data.terms && <div style={{ marginTop: 10, fontSize: 11, color: muted, lineHeight: 1.8, borderTop: `1px solid ${border}`, paddingTop: 10 }}>{data.terms}</div>}
           {data.showSignature && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 32 }}>{[data.providerName || "Service Provider", data.clientName || "Client"].map(n => <div key={n}><div style={{ height: 1, background: "#e5e7eb", marginBottom: 6 }} /><div style={{ fontSize: 11, color: muted }}>{n}</div></div>)}</div>}
@@ -571,10 +568,10 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
       <div style={{ padding: "26px 36px 30px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 22 }}>
           <div style={{ padding: "12px 14px", background: bg2, borderRadius: 10, border: `1px solid ${border}` }}>
-            <PartyBlock label="From" name={data.providerName} company={data.providerCompany} address={data.providerAddress} postcode={data.providerPostcode} city={data.providerCity} country="" email={data.providerEmail} phone={data.providerPhone} kvk={data.kvkNumber} btw={data.btwNumber} accent={ac} muted={muted} tx={tx} />
+            <PartyBlock label={tr.pFrom} name={data.providerName} company={data.providerCompany} address={data.providerAddress} postcode={data.providerPostcode} city={data.providerCity} country="" email={data.providerEmail} phone={data.providerPhone} kvk={data.kvkNumber} btw={data.btwNumber} accent={ac} muted={muted} tx={tx} />
           </div>
           <div style={{ padding: "12px 14px", background: bg2, borderRadius: 10, border: `1px solid ${border}` }}>
-            <PartyBlock label="Bill To" name={data.clientName} company={data.clientCompany} address={data.clientAddress} postcode={data.clientPostcode} city={data.clientCity} country={data.clientCountry !== "Nederland" ? data.clientCountry : ""} email={data.clientEmail} phone={data.clientPhone} kvk={data.clientKvk} btw={data.clientBtw} accent={ac} muted={muted} tx={tx} />
+            <PartyBlock label={tr.pBillTo} name={data.clientName} company={data.clientCompany} address={data.clientAddress} postcode={data.clientPostcode} city={data.clientCity} country={data.clientCountry !== "Nederland" ? data.clientCountry : ""} email={data.clientEmail} phone={data.clientPhone} kvk={data.clientKvk} btw={data.clientBtw} accent={ac} muted={muted} tx={tx} />
           </div>
         </div>
         {(data.projectName || data.techStack) && <div style={{ marginBottom: 18, padding: "10px 14px", background: `${ac}08`, borderRadius: 10, display: "flex", gap: 18, flexWrap: "wrap", alignItems: "center", fontSize: 13 }}>
@@ -582,10 +579,10 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
           {data.techStack && <div><span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: ac }}>Stack </span><span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: ac, marginLeft: 4 }}>{data.techStack}</span></div>}
         </div>}
         <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid ${border}`, marginBottom: 18 }}>
-          <ItemsTable data={data} sym={sym} accent={ac} muted={muted} border={border} bg2={bg2} />
+          <ItemsTable data={data} sym={sym} accent={ac} muted={muted} border={border} bg2={bg2} tr={tr} />
         </div>
-        <BtwBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} />
-        <PaymentBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} />
+        <BtwBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} sym={sym} tr={tr} />
+        <PaymentBlock data={data} accent={ac} muted={muted} border={border} bg2={bg2} tr={tr} />
         {(data.notes || data.terms) && <div style={{ display: "grid", gridTemplateColumns: data.notes && data.terms ? "1fr 1fr" : "1fr", gap: 12, marginTop: 18 }}>
           {data.notes && <div style={{ padding: "10px 12px", background: bg2, borderRadius: 8, borderLeft: `3px solid ${ac}` }}><div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: ac, marginBottom: 4 }}>Opmerkingen</div><div style={{ fontSize: 12, color: muted, lineHeight: 1.7 }}>{data.notes}</div></div>}
           {data.terms && <div style={{ padding: "10px 12px", background: bg2, borderRadius: 8 }}><div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: ac, marginBottom: 4 }}>Voorwaarden</div><div style={{ fontSize: 12, color: muted, lineHeight: 1.7 }}>{data.terms}</div></div>}

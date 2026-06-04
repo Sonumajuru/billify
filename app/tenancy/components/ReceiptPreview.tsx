@@ -2,13 +2,12 @@
 import React from "react";
 import { TenancyData } from "../../types";
 import { calcTenancyTotal as calcTotal, fmtDate } from "../../utils/calc";
-
-const periodStr = (from: string, to: string) =>
-  from && to ? `${fmtDate(from)} – ${fmtDate(to)}` : from ? `From ${fmtDate(from)}` : "";
+import { Lang, T, Tr } from "../../i18n";
 
 interface Props {
   data: TenancyData;
   previewRef: React.RefObject<HTMLDivElement | null>;
+  lang?: Lang;
 }
 
 const STATUS: Record<string, { bg: string; color: string }> = {
@@ -18,19 +17,19 @@ const STATUS: Record<string, { bg: string; color: string }> = {
   Overdue: { bg: "#fee2e2", color: "#991b1b" },
 };
 
-function ChargeRows({ data, accent, muted, border, sym }: {
-  data: TenancyData; accent: string; muted: string; border: string; sym: string;
+function ChargeRows({ data, accent, muted, border, sym, tr }: {
+  data: TenancyData; accent: string; muted: string; border: string; sym: string; tr: Tr;
 }) {
   const fmt = (v: string) => `${sym}${parseFloat(v).toFixed(2)}`;
   const rows = [
-    { label: "Monthly Rent",                          val: data.rentAmount,       main: true  },
-    { label: "Late Fee",                               val: data.lateFee                        },
-    { label: "Parking Fee",                            val: data.parkingFee                     },
-    { label: data.utilitiesLabel  || "Utilities",     val: data.utilitiesAmount                },
-    { label: data.maintenanceLabel|| "Maintenance",   val: data.maintenanceFee                 },
-    { label: "Security Deposit",                       val: data.depositAmount                  },
-    { label: data.otherLabel      || "Other",         val: data.otherFee                       },
-    { label: "Discount",                               val: data.discount,         red: true   },
+    { label: tr.pMonthlyRent,                           val: data.rentAmount,  main: true },
+    { label: tr.pLateFee,                               val: data.lateFee              },
+    { label: tr.pParkingFee,                            val: data.parkingFee           },
+    { label: data.utilitiesLabel  || tr.utilities,      val: data.utilitiesAmount      },
+    { label: data.maintenanceLabel|| tr.maintenance,    val: data.maintenanceFee       },
+    { label: tr.pSecurityDeposit,                       val: data.depositAmount        },
+    { label: data.otherLabel      || tr.otherFee,       val: data.otherFee             },
+    { label: tr.pDiscount,                              val: data.discount, red: true  },
   ].filter(r => parseFloat(r.val) > 0);
 
   return (
@@ -47,7 +46,10 @@ function ChargeRows({ data, accent, muted, border, sym }: {
   );
 }
 
-export default function ReceiptPreview({ data, previewRef }: Props) {
+export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props) {
+  const tr  = T[lang] as Tr;
+  const periodStr = (from: string, to: string) =>
+    from && to ? `${fmtDate(from)} – ${fmtDate(to)}` : from ? `${fmtDate(from)}` : "";
   const total  = calcTotal(data);
   const sym    = data.currencySymbol || "$";
   const fmt    = (v: number | string) => `${sym}${parseFloat(String(v)).toFixed(2)}`;
@@ -73,13 +75,13 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
                 ? <img src={data.logo} alt="" style={{ height: 52, objectFit: "contain", marginBottom: 12, filter: "brightness(0) invert(1) sepia(1) saturate(3) hue-rotate(5deg)", opacity: 0.9 }} />
                 : <div style={{ width: 48, height: 48, borderRadius: 10, background: ac, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, fontSize: 22, fontWeight: 900, color: bg }}>🏠</div>
               }
-              <div style={{ fontSize: 20, fontWeight: 700, color: tx }}>{data.landlordName || data.landlordCompany || "Landlord"}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: tx }}>{data.landlordName || data.landlordCompany || tr.pLandlord}</div>
               {data.landlordCompany && data.landlordName && <div style={{ fontSize: 12, color: muted }}>{data.landlordCompany}</div>}
               {data.landlordAddress && <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{data.landlordAddress}</div>}
               {data.landlordPhone   && <div style={{ fontSize: 12, color: muted }}>{data.landlordPhone}</div>}
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontFamily: "'Fraunces',serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: ac, marginBottom: 6 }}>Tenancy Receipt</div>
+              <div style={{ fontFamily: "'Fraunces',serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: ac, marginBottom: 6 }}>{tr.pTenancyReceipt}</div>
               <div style={{ fontSize: 28, fontWeight: 900, color: ac, fontFamily: "'DM Mono',monospace", letterSpacing: -1 }}>{data.receiptNumber || "RR-001"}</div>
               <div style={{ fontSize: 12, color: muted, marginTop: 4 }}>Issued: {fmtDate(data.issueDate)}</div>
               <div style={{ marginTop: 8, display: "inline-flex", padding: "4px 14px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: statusBadge.bg, color: statusBadge.color }}>{st}</div>
@@ -92,7 +94,7 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
           {/* Parties */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
             <div>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: ac, marginBottom: 8 }}>Received From</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: ac, marginBottom: 8 }}>{tr.pReceivedFrom}</div>
               <div style={{ fontWeight: 700, fontSize: 15, color: tx }}>{data.tenantName || "—"}</div>
               <div style={{ fontSize: 12, color: muted, lineHeight: 1.8 }}>{data.tenantEmail}<br />{data.tenantPhone}</div>
             </div>
@@ -108,7 +110,7 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
           <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
             {[
               { l: "Method",       v: data.paymentMethod || "—" },
-              { l: "Payment Date", v: fmtDate(data.paymentDate) },
+              { l: tr.paymentDate, v: fmtDate(data.paymentDate) },
             ].map(p => (
               <div key={p.l} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${border}`, flex: 1 }}>
                 <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: ac, marginBottom: 3 }}>{p.l}</div>
@@ -118,12 +120,12 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
           </div>
 
           {/* Charges */}
-          <ChargeRows data={data} accent={ac} muted={muted} border={border} sym={sym} />
+          <ChargeRows data={data} accent={ac} muted={muted} border={border} sym={sym} tr={tr} />
 
           {/* Total */}
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: ac, marginBottom: 4 }}>Total Amount Paid</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: ac, marginBottom: 4 }}>{tr.pTotalPaid}</div>
               <div style={{ fontSize: 32, fontWeight: 900, color: ac, fontFamily: "'DM Mono',monospace" }}>{fmt(total)}</div>
             </div>
           </div>
@@ -131,8 +133,8 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
           {data.notes && <div style={{ marginTop: 22, padding: "12px 16px", borderLeft: `3px solid ${ac}`, background: "rgba(201,168,76,0.07)", borderRadius: "0 8px 8px 0", fontSize: 12, color: muted, lineHeight: 1.7 }}>{data.notes}</div>}
           {data.showSignature && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 32 }}>
-              {["Landlord", "Tenant"].map(s => (
-                <div key={s}><div style={{ height: 1, background: border, marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted }}>{s} Signature</div></div>
+              {[tr.pLandlord, tr.pTenant].map(s => (
+                <div key={s}><div style={{ height: 1, background: border, marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted }}>{s} {tr.pSignatureSuffix}</div></div>
               ))}
             </div>
           )}
@@ -159,11 +161,11 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
                 ? <img src={data.logo} alt="" style={{ height: 44, objectFit: "contain", marginBottom: 14 }} />
                 : <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: -1, color: ac }}>{data.landlordName?.charAt(0) || "L"}</div>
               }
-              <div style={{ fontSize: 19, fontWeight: 600, color: tx, marginTop: 4 }}>{data.landlordName || data.landlordCompany || "Landlord"}</div>
+              <div style={{ fontSize: 19, fontWeight: 600, color: tx, marginTop: 4 }}>{data.landlordName || data.landlordCompany || tr.pLandlord}</div>
               {data.landlordAddress && <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{data.landlordAddress}</div>}
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 11, color: muted, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8 }}>Tenancy Receipt</div>
+              <div style={{ fontSize: 11, color: muted, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8 }}>{tr.pTenancyReceipt}</div>
               <div style={{ fontSize: 26, fontWeight: 700, color: tx, fontFamily: "'DM Mono',monospace" }}>{data.receiptNumber || "RR-001"}</div>
               <div style={{ fontSize: 12, color: muted, marginTop: 4 }}>{fmtDate(data.issueDate)}</div>
               <div style={{ marginTop: 8, display: "inline-flex", padding: "3px 12px", borderRadius: 20, fontSize: 10, fontWeight: 700, background: statusBadge.bg, color: statusBadge.color }}>{st}</div>
@@ -174,7 +176,7 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, marginBottom: 32 }}>
             <div>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: muted, marginBottom: 8 }}>Received From</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: muted, marginBottom: 8 }}>{tr.pReceivedFrom}</div>
               <div style={{ fontWeight: 600, color: tx }}>{data.tenantName || "—"}</div>
               <div style={{ fontSize: 12, color: muted, lineHeight: 1.8, marginTop: 2 }}>{data.tenantEmail}{data.tenantPhone && <><br />{data.tenantPhone}</>}</div>
             </div>
@@ -186,10 +188,10 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
             </div>
           </div>
 
-          <ChargeRows data={data} accent={ac} muted={muted} border={border} sym={sym} />
+          <ChargeRows data={data} accent={ac} muted={muted} border={border} sym={sym} tr={tr} />
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 20, paddingTop: 16, borderTop: "2px solid " + tx }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: tx }}>Total Paid</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: tx }}>{tr.pTotalPaidShort}</span>
             <span style={{ fontSize: 28, fontWeight: 900, color: tx, fontFamily: "'DM Mono',monospace" }}>{fmt(total)}</span>
           </div>
 
@@ -201,8 +203,8 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
           {data.notes && <div style={{ marginTop: 24, fontSize: 12, color: muted, lineHeight: 1.8, borderTop: `1px solid ${border}`, paddingTop: 16 }}>{data.notes}</div>}
           {data.showSignature && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 32 }}>
-              {["Landlord", "Tenant"].map(s => (
-                <div key={s}><div style={{ height: 1, background: "#e5e7eb", marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted }}>{s} Signature</div></div>
+              {[tr.pLandlord, tr.pTenant].map(s => (
+                <div key={s}><div style={{ height: 1, background: "#e5e7eb", marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted }}>{s} {tr.pSignatureSuffix}</div></div>
               ))}
             </div>
           )}
@@ -230,12 +232,12 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
               : <div style={{ width: 44, height: 44, borderRadius: 12, background: ac, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 900, color: "#09090b" }}>🏢</div>
             }
             <div>
-              <div style={{ fontWeight: 700, fontSize: 17, color: tx }}>{data.landlordName || data.landlordCompany || "Landlord"}</div>
+              <div style={{ fontWeight: 700, fontSize: 17, color: tx }}>{data.landlordName || data.landlordCompany || tr.pLandlord}</div>
               {data.landlordAddress && <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{data.landlordAddress}</div>}
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: ac, marginBottom: 4 }}>Tenancy Receipt</div>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: ac, marginBottom: 4 }}>{tr.pTenancyReceipt}</div>
             <div style={{ fontSize: 22, fontWeight: 900, fontFamily: "'DM Mono',monospace", color: tx }}>{data.receiptNumber || "RR-001"}</div>
             <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{fmtDate(data.issueDate)}</div>
           </div>
@@ -273,18 +275,18 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
             </div>
           </div>
 
-          <ChargeRows data={data} accent={ac} muted={muted} border={border} sym={sym} />
+          <ChargeRows data={data} accent={ac} muted={muted} border={border} sym={sym} tr={tr} />
 
           <div style={{ marginTop: 16, padding: "16px", borderRadius: 12, background: "#09090b", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: muted }}>Total Amount Paid</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: muted }}>{tr.pTotalPaid}</span>
             <span style={{ fontSize: 30, fontWeight: 900, color: ac, fontFamily: "'DM Mono',monospace" }}>{fmt(total)}</span>
           </div>
 
           {data.notes && <div style={{ marginTop: 18, padding: "12px 14px", borderRadius: 10, border: `1px solid ${border}`, fontSize: 12, color: muted, lineHeight: 1.7 }}>{data.notes}</div>}
           {data.showSignature && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 28 }}>
-              {["Landlord", "Tenant"].map(s => (
-                <div key={s}><div style={{ height: 1, background: border, marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted }}>{s} Signature</div></div>
+              {[tr.pLandlord, tr.pTenant].map(s => (
+                <div key={s}><div style={{ height: 1, background: border, marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted }}>{s} {tr.pSignatureSuffix}</div></div>
               ))}
             </div>
           )}
@@ -311,12 +313,12 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
               : <span style={{ fontSize: 24 }}>🏛️</span>
             }
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{data.landlordName || data.landlordCompany || "Landlord"}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{data.landlordName || data.landlordCompany || tr.pLandlord}</div>
               {data.landlordCompany && data.landlordName && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>{data.landlordCompany}</div>}
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(255,255,255,0.7)" }}>Official Receipt</div>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(255,255,255,0.7)" }}>{tr.pOfficialReceipt}</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", fontFamily: "'DM Mono',monospace" }}>{data.receiptNumber || "RR-001"}</div>
           </div>
         </div>
@@ -394,8 +396,8 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
           {data.terms && <div style={{ marginTop: 10, padding: "10px 14px", fontSize: 11, color: muted, fontFamily: "'DM Sans',sans-serif", lineHeight: 1.7, borderTop: `1px solid ${border}` }}><strong style={{ color: tx }}>Terms:</strong> {data.terms}</div>}
           {data.showSignature && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 32 }}>
-              {["Landlord", "Tenant"].map(s => (
-                <div key={s}><div style={{ height: 1, background: ac, marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted, fontFamily: "'DM Sans',sans-serif" }}>{s} Signature & Date</div></div>
+              {[tr.pLandlord, tr.pTenant].map(s => (
+                <div key={s}><div style={{ height: 1, background: ac, marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted, fontFamily: "'DM Sans',sans-serif" }}>{s} {tr.pSignatureSuffix}</div></div>
               ))}
             </div>
           )}
@@ -428,13 +430,13 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
                     <div style={{ width: 40, height: 40, borderRadius: 10, background: ac, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🏡</div>
                   </div>
               }
-              <div style={{ fontSize: 20, fontWeight: 700, color: tx }}>{data.landlordName || data.landlordCompany || "Landlord"}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: tx }}>{data.landlordName || data.landlordCompany || tr.pLandlord}</div>
               {data.landlordCompany && data.landlordName && <div style={{ fontSize: 12, color: muted }}>{data.landlordCompany}</div>}
               {data.landlordAddress && <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{data.landlordAddress}</div>}
               {data.landlordPhone   && <div style={{ fontSize: 12, color: muted }}>{data.landlordPhone}</div>}
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 24, fontWeight: 900, color: ac, letterSpacing: -0.5 }}>Rent Receipt</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: ac, letterSpacing: -0.5 }}>{tr.pRentReceipt}</div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, color: muted, marginTop: 3 }}>{data.receiptNumber || "RR-001"}</div>
               <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{fmtDate(data.issueDate)}</div>
               <div style={{ marginTop: 8, display: "inline-flex", padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: statusBadge.bg, color: statusBadge.color }}>{st}</div>
@@ -468,11 +470,11 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
             ))}
           </div>
 
-          <ChargeRows data={data} accent={ac} muted={muted} border={border} sym={sym} />
+          <ChargeRows data={data} accent={ac} muted={muted} border={border} sym={sym} tr={tr} />
 
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
             <div style={{ padding: "16px 20px", borderRadius: 12, background: ac, display: "flex", gap: 24, alignItems: "center" }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>Total Paid</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>{tr.pTotalPaidShort}</span>
               <span style={{ fontSize: 28, fontWeight: 900, color: "#fff", fontFamily: "'DM Mono',monospace" }}>{fmt(total)}</span>
             </div>
           </div>
@@ -480,8 +482,8 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
           {data.notes && <div style={{ marginTop: 20, padding: "12px 16px", borderLeft: `3px solid ${ac}`, background: `${ac}08`, borderRadius: "0 8px 8px 0", fontSize: 12, color: muted, lineHeight: 1.7 }}>{data.notes}</div>}
           {data.showSignature && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 28 }}>
-              {["Landlord", "Tenant"].map(s => (
-                <div key={s}><div style={{ height: 1, background: border, marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted }}>{s} Signature</div></div>
+              {[tr.pLandlord, tr.pTenant].map(s => (
+                <div key={s}><div style={{ height: 1, background: border, marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted }}>{s} {tr.pSignatureSuffix}</div></div>
               ))}
             </div>
           )}
@@ -504,12 +506,12 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: 20, borderBottom: `2px solid ${ac}`, marginBottom: 24 }}>
           <div>
             {data.logo ? <img src={data.logo} alt="" style={{ height: 44, objectFit: "contain", marginBottom: 10 }} /> : null}
-            <div style={{ fontSize: 18, fontWeight: 700, color: tx }}>{data.landlordName || data.landlordCompany || "Landlord"}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: tx }}>{data.landlordName || data.landlordCompany || tr.pLandlord}</div>
             {data.landlordAddress && <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{data.landlordAddress}</div>}
             {data.landlordPhone   && <div style={{ fontSize: 12, color: muted }}>{data.landlordPhone}</div>}
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted, marginBottom: 4 }}>Tenancy Receipt</div>
+            <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted, marginBottom: 4 }}>{tr.pTenancyReceipt}</div>
             <div style={{ fontSize: 22, fontWeight: 800, color: tx, fontFamily: "'DM Mono',monospace" }}>{data.receiptNumber || "RR-001"}</div>
             <div style={{ fontSize: 12, color: muted }}>{fmtDate(data.issueDate)}</div>
             <div style={{ marginTop: 6, display: "inline-flex", padding: "3px 10px", borderRadius: 20, fontSize: 10, fontWeight: 700, background: statusBadge.bg, color: statusBadge.color }}>{st}</div>
@@ -518,7 +520,7 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 22, fontSize: 13 }}>
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted, marginBottom: 6 }}>Received From</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted, marginBottom: 6 }}>{tr.pReceivedFrom}</div>
             <div style={{ fontWeight: 600, color: tx }}>{data.tenantName || "—"}</div>
             <div style={{ color: muted, lineHeight: 1.8 }}>{data.tenantEmail}{data.tenantPhone && <><br />{data.tenantPhone}</>}</div>
           </div>
@@ -530,10 +532,10 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
           </div>
         </div>
 
-        <ChargeRows data={data} accent={ac} muted={muted} border={border} sym={sym} />
+        <ChargeRows data={data} accent={ac} muted={muted} border={border} sym={sym} tr={tr} />
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 16, paddingTop: 14, borderTop: `2px solid ${ac}` }}>
-          <span style={{ fontSize: 15, fontWeight: 700 }}>Total Paid</span>
+          <span style={{ fontSize: 15, fontWeight: 700 }}>{tr.pTotalPaidShort}</span>
           <span style={{ fontSize: 26, fontWeight: 900, color: ac, fontFamily: "'DM Mono',monospace" }}>{fmt(total)}</span>
         </div>
         <div style={{ fontSize: 12, color: muted, marginTop: 10 }}>
@@ -543,8 +545,8 @@ export default function ReceiptPreview({ data, previewRef }: Props) {
         {data.notes && <div style={{ marginTop: 18, padding: "12px", background: "#f9fafb", borderRadius: 8, fontSize: 12, color: muted, lineHeight: 1.7 }}>{data.notes}</div>}
         {data.showSignature && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 28 }}>
-            {["Landlord", "Tenant"].map(s => (
-              <div key={s}><div style={{ height: 1, background: border, marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted }}>{s} Signature</div></div>
+            {[tr.pLandlord, tr.pTenant].map(s => (
+              <div key={s}><div style={{ height: 1, background: border, marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted }}>{s} {tr.pSignatureSuffix}</div></div>
             ))}
           </div>
         )}
