@@ -3,22 +3,22 @@
 html, body { height: 100%; }
 
 :root {
-  --app:        #0f172a;
-  --panel:      #1a2744;
-  --surface:    #243356;
-  --surface2:   #2d3f68;
-  --border:     #3b5280;
-  --border2:    #4e6699;
-  --text:       #e8f0fe;
-  --text2:      #7a9fd4;
-  --text3:      #4a6899;
+  --app:        #586371;
+  --panel:      #e0e8f4;
+  --surface:    #d8e2f0;
+  --surface2:   #4b6283;
+  --border:     #aabace;
+  --border2:    #90a8c0;
+  --text:       #0e0e0f;
+  --text2:      #38546e;
+  --text3:      #6888a8;
   --accent:     #f59e0b;
-  --accent-dim: rgba(245,158,11,0.13);
+  --accent-dim: rgba(245,158,11,0.14);
   --green:      #10b981;
-  --green-dim:  rgba(16,185,129,0.13);
+  --green-dim:  rgba(16,185,129,0.14);
   --orange:     #f97316;
-  --red:        #f87171;
-  --purple:     #a78bfa;
+  --red:        #ef4444;
+  --purple:     #8b5cf6;
 }
 
 body {
@@ -28,9 +28,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-::selection { background: rgba(245,158,11,0.25); color: var(--text); }
+::selection { background: rgba(245,158,11,0.2); color: var(--text); }
 
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
@@ -39,9 +39,51 @@ input[type=color] { -webkit-appearance: none; border: none; padding: 0; cursor: 
 input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
 input[type=color]::-webkit-color-swatch { border: none; border-radius: 6px; }
 
-@media print { body { background: white !important; } .no-print { display: none !important; } }
+/* Force light mode for all form elements regardless of OS dark mode */
+input, select, textarea, button {
+  color-scheme: light;
+}
+select, input, textarea {
+  background-color: var(--surface);
+  color: var(--text);
+}
+select option { background: #f7f9fc; color: #1a2540; }
+
+/* ── Responsive sidebar ─────────────────────────────────────────── */
+.sidebar {
+  width: 100%;
+  flex-shrink: 0;
+}
+@media (min-width: 768px) {
+  .sidebar {
+    width: 380px;
+    max-width: 400px;
+  }
+}
+
+/* Mobile bottom nav padding */
+@media (max-width: 767px) {
+  .main-body { padding-bottom: 64px; }
+  /* Hide items that the mobile nav replaces */
+  .desktop-only { display: none !important; }
+  /* Make sure topbar is compact */
+  .topbar-auto-save { display: none !important; }
+}
+@media (min-width: 768px) {
+  /* Hide mobile-only elements */
+  .mobile-only { display: none !important; }
+}
+
+@media print {
+  body { background: white !important; }
+  .no-print { display: none !important; }
+}
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-.fade-in { animation: fadeIn 0.25s ease both; }
+.fade-in { animation: fadeIn 0.22s ease both; }
 @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
-.slide-in { animation: slideIn 0.2s ease both; }
+.slide-in { animation: slideIn 0.18s ease both; }
+
+/* Accordion open animation */
+@keyframes openSection { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.section-open { animation: openSection 0.18s ease both; }

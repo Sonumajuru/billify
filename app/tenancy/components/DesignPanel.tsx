@@ -106,7 +106,7 @@ export default function DesignPanel({ data, onChange }: Props) {
                 onChange({ ...data, templateId: t.id, accentColor: preset.accent, bgColor: preset.bg, textColor: preset.text });
               }}
                 className={`w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left ${
-                  active ? "border-[var(--accent)] bg-[var(--accent-dim)]" : "border-[var(--panel-border)] bg-[var(--surface)] hover:border-[var(--accent)]"
+                  active ? "border-[var(--accent)] bg-[var(--accent-dim)]" : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)]"
                 }`}>
                 {/* Mini receipt preview swatch */}
                 <div style={{ width: 52, height: 52, borderRadius: 10, background: t.preview.bg, flexShrink: 0, position: "relative", overflow: "hidden", border: `2px solid ${active ? "var(--accent)" : "transparent"}` }}>
@@ -125,10 +125,10 @@ export default function DesignPanel({ data, onChange }: Props) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className={`font-bold text-sm ${active ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{t.name}</span>
+                    <span className={`font-bold text-sm ${active ? "text-[var(--text)]" : "text-[var(--text2)]"}`}>{t.name}</span>
                     <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20, background: active ? "var(--accent)" : "var(--panel-border)", color: active ? "#fff" : "var(--text-muted)", letterSpacing: "0.06em" }}>{t.preview.tag}</span>
                   </div>
-                  <div className="text-[11px] text-[var(--text-muted)] mt-0.5">{t.tagline}</div>
+                  <div className="text-[11px] text-[var(--text3)] mt-0.5">{t.tagline}</div>
                 </div>
               </button>
             );
@@ -144,7 +144,7 @@ export default function DesignPanel({ data, onChange }: Props) {
             <button key={i} onClick={() => onChange({ ...data, accentColor: p.accent, bgColor: p.bg, textColor: p.text })}
               title={`Variant ${i + 1}`}
               className={`h-12 rounded-xl border-2 transition-all relative overflow-hidden ${
-                data.accentColor === p.accent && data.bgColor === p.bg ? "border-[var(--accent)] scale-105" : "border-[var(--panel-border)] hover:scale-105"
+                data.accentColor === p.accent && data.bgColor === p.bg ? "border-[var(--accent)] scale-105" : "border-[var(--border)] hover:scale-105"
               }`} style={{ background: p.bg }}>
               <div className="absolute left-0 top-0 bottom-0 w-3" style={{ background: p.accent }} />
             </button>
@@ -158,10 +158,10 @@ export default function DesignPanel({ data, onChange }: Props) {
             { k: "textColor"   as const, label: "Text" },
           ]).map(c => (
             <label key={c.k} className="flex flex-col items-center gap-1.5 cursor-pointer group">
-              <div className="w-10 h-10 rounded-xl border-2 border-[var(--panel-border)] group-hover:border-[var(--accent)] transition overflow-hidden relative">
+              <div className="w-10 h-10 rounded-xl border-2 border-[var(--border)] group-hover:border-[var(--accent)] transition overflow-hidden relative">
                 <input type="color" value={data[c.k]} onChange={e => set(c.k, e.target.value)} className="absolute inset-0 w-full h-full cursor-pointer" />
               </div>
-              <span className="text-[10px] text-[var(--text-muted)]">{c.label}</span>
+              <span className="text-[10px] text-[var(--text3)]">{c.label}</span>
             </label>
           ))}
         </div>
@@ -172,10 +172,10 @@ export default function DesignPanel({ data, onChange }: Props) {
         <p className={st}>Watermark</p>
         <label className="flex items-center gap-3 cursor-pointer mb-3">
           <div onClick={() => set("showWatermark", !data.showWatermark)}
-            className={`w-10 h-5 rounded-full transition-all relative ${data.showWatermark ? "bg-[var(--accent)]" : "bg-[var(--panel-border)]"}`}>
+            className={`w-10 h-5 rounded-full transition-all relative ${data.showWatermark ? "bg-[var(--accent)]" : "bg-[var(--border2)]"}`}>
             <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-all ${data.showWatermark ? "left-5" : "left-0.5"}`} />
           </div>
-          <span className="text-sm text-[var(--text-secondary)]">Show diagonal watermark</span>
+          <span className="text-sm text-[var(--text2)]">Show diagonal watermark</span>
         </label>
         {data.showWatermark && (
           <div className="grid grid-cols-3 gap-2">
@@ -183,8 +183,8 @@ export default function DesignPanel({ data, onChange }: Props) {
               <button key={w} onClick={() => set("watermarkText", w)}
                 className={`py-2 rounded-xl border text-[11px] font-bold transition ${
                   data.watermarkText === w
-                    ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--text-primary)]"
-                    : "border-[var(--panel-border)] text-[var(--text-muted)] hover:border-[var(--accent)]"
+                    ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--text)]"
+                    : "border-[var(--border)] text-[var(--text3)] hover:border-[var(--accent)]"
                 }`}>{w}</button>
             ))}
           </div>
