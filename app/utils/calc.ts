@@ -1,4 +1,4 @@
-import { ITReceiptData, TenancyData, LineItem, VatRate } from "../types";
+import { ITReceiptData, TenancyData, GeneralReceiptData, LineItem, VatRate } from "../types";
 
 // ── IT INVOICE CALC ──────────────────────────────────────────────
 export const lineExcl = (item: LineItem): number =>
@@ -27,6 +27,17 @@ export const calcITTotals = (data: ITReceiptData) => {
     ? calcVatGroups(data.items) : [];
   const totalVat      = vatGroups.reduce((s, g) => s + g.vat, 0);
   return { subtotalExcl, discount: discountAmt, afterDiscount, vatGroups, totalVat, totalIncl: afterDiscount + totalVat };
+};
+
+// ── GENERAL RECEIPT CALC ──────────────────────────────────────────
+export const calcGeneralReceiptTotals = (d: GeneralReceiptData) => {
+  const subtotal = d.items.reduce((s, i) => s + (parseFloat(i.quantity)||0) * (parseFloat(i.rate)||0), 0);
+  const discountAmt = d.discountType === "percent"
+    ? subtotal * ((parseFloat(d.discount)||0) / 100)
+    : (parseFloat(d.discount)||0);
+  const afterDiscount = subtotal - discountAmt;
+  const taxAmt = d.showTax ? afterDiscount * ((parseFloat(d.taxRate)||0) / 100) : 0;
+  return { subtotal, discount: discountAmt, afterDiscount, tax: taxAmt, total: afterDiscount + taxAmt };
 };
 
 // ── TENANCY CALC ─────────────────────────────────────────────────

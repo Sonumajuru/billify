@@ -1,5 +1,5 @@
 // ─── SHARED ───────────────────────────────────────────────────────
-export type AppMode = "invoice" | "tenancy";
+export type AppMode = "invoice" | "tenancy" | "receipt";
 
 // ─── SAVED DOCUMENTS ──────────────────────────────────────────────
 export interface SavedDoc {
@@ -7,7 +7,7 @@ export interface SavedDoc {
   mode: AppMode;
   name: string;          // user-given name e.g. "Invoice #2024-003 — ACME"
   savedAt: string;       // ISO timestamp
-  data: ITReceiptData | TenancyData;
+  data: ITReceiptData | TenancyData | GeneralReceiptData;
 }
 
 // ─── SAVED TEMPLATES ──────────────────────────────────────────────
@@ -17,7 +17,7 @@ export interface SavedTemplate {
   name: string;
   createdAt: string;
   // Only design + provider/landlord identity fields — NOT client/project-specific
-  template: Partial<ITReceiptData> | Partial<TenancyData>;
+  template: Partial<ITReceiptData> | Partial<TenancyData> | Partial<GeneralReceiptData>;
 }
 
 // ─── IT INVOICE TYPES ─────────────────────────────────────────────
@@ -59,6 +59,31 @@ export interface ITReceiptData {
   notes: string; terms: string; footer: string;
   showSignature: boolean; showWatermark: boolean; watermarkText: string;
   templateId: ITTemplateId; accentColor: string; bgColor: string; textColor: string;
+}
+
+// ─── GENERAL RECEIPT TYPES ────────────────────────────────────────
+export type GeneralReceiptTemplateId = "fresh" | "dark" | "warm";
+
+export interface GeneralReceiptItem {
+  id: string;
+  description: string;
+  quantity: string;
+  rate: string;
+}
+
+export interface GeneralReceiptData {
+  logo: string;
+  sellerName: string; sellerCompany: string; sellerAddress: string;
+  sellerPhone: string; sellerEmail: string; sellerWebsite: string;
+  receiptNumber: string; issueDate: string; paymentDate: string;
+  paymentStatus: PaymentStatus; paymentMethod: string; currencySymbol: string;
+  buyerName: string; buyerEmail: string; buyerPhone: string; buyerAddress: string;
+  items: GeneralReceiptItem[];
+  discount: string; discountType: "percent" | "fixed";
+  taxRate: string; taxLabel: string; showTax: boolean;
+  notes: string; footer: string;
+  showSignature: boolean; showWatermark: boolean; watermarkText: string;
+  templateId: GeneralReceiptTemplateId; accentColor: string; bgColor: string; textColor: string;
 }
 
 // ─── TENANCY RECEIPT TYPES ────────────────────────────────────────

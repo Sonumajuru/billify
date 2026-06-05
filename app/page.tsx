@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   Download, Printer, RefreshCw, Palette, FileText, Eye, EyeOff,
-  Monitor, Home, BookOpen, ChevronDown, Check, Globe,
+  Monitor, Home, BookOpen, ChevronDown, Check, Globe, ShoppingBag,
 } from "lucide-react";
 import InvoiceForm    from "./invoice/components/FormPanel";
 import InvoiceDesign  from "./invoice/components/DesignPanel";
@@ -10,8 +10,11 @@ import InvoicePreview from "./invoice/components/ReceiptPreview";
 import TenancyForm    from "./tenancy/components/FormPanel";
 import TenancyDesign  from "./tenancy/components/DesignPanel";
 import TenancyPreview from "./tenancy/components/ReceiptPreview";
+import ReceiptForm    from "./receipt/components/FormPanel";
+import ReceiptDesign  from "./receipt/components/DesignPanel";
+import ReceiptPreview from "./receipt/components/ReceiptPreview";
 import SavedPanel     from "./components/SavedPanel";
-import { ITReceiptData, TenancyData, AppMode, SavedDoc, SavedTemplate } from "./types";
+import { ITReceiptData, TenancyData, GeneralReceiptData, AppMode, SavedDoc, SavedTemplate } from "./types";
 import { saveDraft as storeAutosave } from "./utils/storage";
 import { calcDueDate } from "./utils/calc";
 import { Lang, T } from "./i18n";
@@ -36,6 +39,20 @@ const DEFAULT_INVOICE: ITReceiptData = {
   paymentTermDays:"30", paymentMethod:"Bank Transfer", paymentNotes:"",
   notes:"", terms:"", footer:"", showSignature:false, showWatermark:false, watermarkText:"PAID",
   templateId:"terminal", accentColor:"#f59e0b", bgColor:"#0d1117", textColor:"#e6edf3",
+};
+
+const DEFAULT_RECEIPT: GeneralReceiptData = {
+  logo:"", sellerName:"", sellerCompany:"", sellerAddress:"",
+  sellerPhone:"", sellerEmail:"", sellerWebsite:"",
+  receiptNumber:"RC-001", issueDate:today, paymentDate:today, paymentStatus:"Paid",
+  paymentMethod:"Cash", currencySymbol:"€",
+  buyerName:"", buyerEmail:"", buyerPhone:"", buyerAddress:"",
+  items:[{ id:"1", description:"", quantity:"1", rate:"" }],
+  discount:"", discountType:"percent",
+  taxRate:"", taxLabel:"Tax", showTax:false,
+  notes:"", footer:"",
+  showSignature:false, showWatermark:false, watermarkText:"PAID",
+  templateId:"fresh", accentColor:"#3b82f6", bgColor:"#ffffff", textColor:"#111827",
 };
 
 const DEFAULT_TENANCY: TenancyData = {
@@ -63,21 +80,22 @@ const LANGS: { id: Lang; label: string; flag: string }[] = [
 ];
 
 export default function HomePage() {
-  const [mode,         setMode]         = useState<AppMode>("invoice");
-  const [invoiceData,  setInvoiceData]  = useState<ITReceiptData>(DEFAULT_INVOICE);
-  const [tenancyData,  setTenancyData]  = useState<TenancyData>(DEFAULT_TENANCY);
-  const [tab,          setTab]          = useState<SideTab>("content");
-  const [showPreview,  setShowPreview]  = useState(true);
-  const [modeMenuOpen, setModeMenuOpen] = useState(false);
-  const [langMenuOpen, setLangMenuOpen] = useState(false);
-  const [lang,         setLang]         = useState<Lang>("en");
-  const [mobileView,   setMobileView]   = useState<MobileView>("form");
-  const [autoSavedAt,  setAutoSavedAt]  = useState<string | null>(null);
+  const [mode,          setMode]          = useState<AppMode>("invoice");
+  const [invoiceData,   setInvoiceData]   = useState<ITReceiptData>(DEFAULT_INVOICE);
+  const [tenancyData,   setTenancyData]   = useState<TenancyData>(DEFAULT_TENANCY);
+  const [receiptData,   setReceiptData]   = useState<GeneralReceiptData>(DEFAULT_RECEIPT);
+  const [tab,           setTab]           = useState<SideTab>("content");
+  const [showPreview,   setShowPreview]   = useState(true);
+  const [modeMenuOpen,  setModeMenuOpen]  = useState(false);
+  const [langMenuOpen,  setLangMenuOpen]  = useState(false);
+  const [lang,          setLang]          = useState<Lang>("en");
+  const [mobileView,    setMobileView]    = useState<MobileView>("form");
+  const [autoSavedAt,   setAutoSavedAt]   = useState<string | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const autoRef    = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   const tr = T[lang];
-  const currentData = mode === "invoice" ? invoiceData : tenancyData;
+  const currentData = mode === "invoice" ? invoiceData : mode === "tenancy" ? tenancyData : receiptData;
 
   useEffect(() => {
     clearInterval(autoRef.current);
@@ -102,15 +120,15 @@ export default function HomePage() {
     try {
       const html2canvas = (await import("html2canvas")).default;
       const jsPDF       = (await import("jspdf")).default;
-      const bg = mode === "invoice" ? (invoiceData.bgColor || "#08101f") : (tenancyData.bgColor || "#fff");
+      const bg = mode === "invoice" ? (invoiceData.bgColor || "#08101f") : mode === "tenancy" ? (tenancyData.bgColor || "#fff") : (receiptData.bgColor || "#fff");
       const canvas = await html2canvas(previewRef.current, { scale: 2.5, useCORS: true, backgroundColor: bg });
       const w = canvas.width / 2.5, h = canvas.height / 2.5;
       const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [w, h] });
       pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, w, h);
-      const num = mode === "invoice" ? invoiceData.docNumber : tenancyData.receiptNumber;
+      const num = mode === "invoice" ? invoiceData.docNumber : mode === "tenancy" ? tenancyData.receiptNumber : receiptData.receiptNumber;
       pdf.save(`${mode}-${num || "001"}.pdf`);
       // track locally, in Vercel Analytics, and in global Redis store
-      const docType = mode === "invoice" ? invoiceData.docType : "tenancy";
+      const docType = mode === "invoice" ? invoiceData.docType : mode === "tenancy" ? "tenancy" : "receipt";
       trackDownload({ ts: Date.now(), mode, lang, docType });
       track("download", { mode, lang, docType });
       fetch("/api/track", {
@@ -126,29 +144,34 @@ export default function HomePage() {
   const handleReset = () => {
     if (!confirm(tr.resetConfirm)) return;
     if (mode === "invoice") setInvoiceData({ ...DEFAULT_INVOICE, issueDate: today, dueDate: calcDueDate(today,"30") });
-    else setTenancyData({ ...DEFAULT_TENANCY, issueDate: today, paymentDate: today });
+    else if (mode === "tenancy") setTenancyData({ ...DEFAULT_TENANCY, issueDate: today, paymentDate: today });
+    else setReceiptData({ ...DEFAULT_RECEIPT, issueDate: today, paymentDate: today });
   };
 
   const handleLoadDoc = (doc: SavedDoc) => {
-    if (doc.mode === "invoice") { setInvoiceData(doc.data as ITReceiptData); setMode("invoice"); }
-    else                        { setTenancyData(doc.data as TenancyData);   setMode("tenancy"); }
+    if (doc.mode === "invoice")  { setInvoiceData(doc.data as ITReceiptData);     setMode("invoice"); }
+    else if (doc.mode === "tenancy") { setTenancyData(doc.data as TenancyData);   setMode("tenancy"); }
+    else                         { setReceiptData(doc.data as GeneralReceiptData); setMode("receipt"); }
     setTab("content");
   };
 
   const handleApplyTemplate = (tpl: SavedTemplate) => {
-    if (tpl.mode === "invoice") setInvoiceData(prev => ({ ...prev, ...(tpl.template as Partial<ITReceiptData>) }));
-    else                        setTenancyData(prev => ({ ...prev, ...(tpl.template as Partial<TenancyData>) }));
+    if (tpl.mode === "invoice")  setInvoiceData(prev => ({ ...prev, ...(tpl.template as Partial<ITReceiptData>) }));
+    else if (tpl.mode === "tenancy") setTenancyData(prev => ({ ...prev, ...(tpl.template as Partial<TenancyData>) }));
+    else                         setReceiptData(prev => ({ ...prev, ...(tpl.template as Partial<GeneralReceiptData>) }));
   };
 
   const handleNewDoc = () => {
-    if (mode === "invoice") setInvoiceData({ ...DEFAULT_INVOICE, issueDate: today, dueDate: calcDueDate(today,"30") });
-    else setTenancyData({ ...DEFAULT_TENANCY, issueDate: today, paymentDate: today });
+    if (mode === "invoice")  setInvoiceData({ ...DEFAULT_INVOICE, issueDate: today, dueDate: calcDueDate(today,"30") });
+    else if (mode === "tenancy") setTenancyData({ ...DEFAULT_TENANCY, issueDate: today, paymentDate: today });
+    else setReceiptData({ ...DEFAULT_RECEIPT, issueDate: today, paymentDate: today });
     setTab("content");
   };
 
-  const MODES: { id: AppMode; label: string; icon: React.ReactNode; color: string }[] = [
-    { id:"invoice", label: tr.invoiceMode, icon:<Monitor size={14}/>, color:"var(--accent)" },
-    { id:"tenancy", label: tr.tenancyMode, icon:<Home size={14}/>,    color:"var(--green)" },
+  const MODES: { id: AppMode; label: string; desc: string; icon: React.ReactNode; color: string }[] = [
+    { id:"invoice", label: tr.invoiceMode,        desc: tr.invoiceModeDesc,        icon:<Monitor size={14}/>,     color:"var(--accent)" },
+    { id:"tenancy", label: tr.tenancyMode,        desc: tr.tenancyModeDesc,        icon:<Home size={14}/>,        color:"var(--green)"  },
+    { id:"receipt", label: tr.generalReceiptMode, desc: tr.generalReceiptModeDesc, icon:<ShoppingBag size={14}/>, color:"var(--purple)"  },
   ];
   const activeMode = MODES.find(m => m.id === mode)!;
 
@@ -198,15 +221,21 @@ export default function HomePage() {
             <ChevronDown size={12} color="var(--text3)" />
           </button>
           {modeMenuOpen && (
-            <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, background:"var(--panel)", border:"1px solid var(--border)", borderRadius:12, overflow:"hidden", minWidth:210, zIndex:200, boxShadow:"0 8px 24px rgba(0,0,0,0.14)" }}>
+            <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, background:"var(--panel)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", minWidth:240, zIndex:200, boxShadow:"0 8px 24px rgba(0,0,0,0.14)" }}>
+              <div style={{ padding:"8px 14px 6px", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.12em", color:"var(--text3)", borderBottom:"1px solid var(--border)" }}>
+                Document type
+              </div>
               {MODES.map(m => (
                 <button key={m.id} onClick={() => { setMode(m.id); setModeMenuOpen(false); }}
-                  style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"transparent", border:"none", cursor:"pointer", fontFamily:"inherit", textAlign:"left" }}
-                  onMouseEnter={e=>(e.currentTarget.style.background="var(--surface2)")}
-                  onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
-                  <span style={{ color: m.color }}>{m.icon}</span>
-                  <span style={{ fontSize:13, fontWeight:500, color:"var(--text)", flex:1 }}>{m.label}</span>
-                  {mode === m.id && <Check size={13} color="var(--accent)" />}
+                  style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background: mode===m.id ? "var(--surface2)" : "transparent", border:"none", cursor:"pointer", fontFamily:"inherit", textAlign:"left" }}
+                  onMouseEnter={e=>{ if (mode!==m.id) e.currentTarget.style.background="var(--surface2)"; }}
+                  onMouseLeave={e=>{ if (mode!==m.id) e.currentTarget.style.background="transparent"; }}>
+                  <span style={{ color: m.color, flexShrink:0 }}>{m.icon}</span>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:13, fontWeight:600, color:"var(--text)" }}>{m.label}</div>
+                    <div style={{ fontSize:11, color:"var(--text3)", marginTop:1 }}>{m.desc}</div>
+                  </div>
+                  {mode === m.id && <Check size={13} color="var(--accent)" style={{ flexShrink:0 }} />}
                 </button>
               ))}
             </div>
@@ -306,10 +335,14 @@ export default function HomePage() {
                   tab === "content"
                     ? <InvoiceForm data={invoiceData} onChange={setInvoiceData} lang={lang} />
                     : <InvoiceDesign data={invoiceData} onChange={setInvoiceData} />
-                ) : (
+                ) : mode === "tenancy" ? (
                   tab === "content"
                     ? <TenancyForm data={tenancyData} onChange={setTenancyData} lang={lang} />
                     : <TenancyDesign data={tenancyData} onChange={setTenancyData} />
+                ) : (
+                  tab === "content"
+                    ? <ReceiptForm data={receiptData} onChange={setReceiptData} lang={lang} />
+                    : <ReceiptDesign data={receiptData} onChange={setReceiptData} />
                 )}
               </div>
             )}
@@ -340,13 +373,20 @@ export default function HomePage() {
                     {tenancyData.paymentStatus}
                   </span>
                 )}
+                {mode === "receipt" && (
+                  <span style={{ fontSize:11, padding:"2px 8px", borderRadius:20, background: receiptData.paymentStatus==="Paid"?"rgba(16,185,129,0.1)":"rgba(255,255,255,0.9)", color: receiptData.paymentStatus==="Paid"?"#059669":"var(--text2)", border: receiptData.paymentStatus==="Paid"?"1px solid rgba(16,185,129,0.35)":"1px solid var(--border)" }}>
+                    {receiptData.paymentStatus}
+                  </span>
+                )}
               </div>
             </div>
 
             <div style={{ filter:"drop-shadow(0 8px 32px rgba(30,50,100,0.12))" }}>
               {mode === "invoice"
                 ? <InvoicePreview data={invoiceData} previewRef={previewRef} lang={lang} />
-                : <TenancyPreview data={tenancyData} previewRef={previewRef} lang={lang} />
+                : mode === "tenancy"
+                  ? <TenancyPreview data={tenancyData} previewRef={previewRef} lang={lang} />
+                  : <ReceiptPreview data={receiptData} previewRef={previewRef} lang={lang} />
               }
             </div>
           </main>

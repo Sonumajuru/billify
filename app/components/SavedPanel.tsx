@@ -2,9 +2,9 @@
 import { useState, useEffect, useRef } from "react";
 import {
   Save, FolderOpen, Trash2, Download, Upload, Copy,
-  Clock, FileText, Home, Star, Check, Plus, Layers,
+  Clock, FileText, Home, ShoppingBag, Star, Check, Plus, Layers,
 } from "lucide-react";
-import { SavedDoc, SavedTemplate, AppMode, ITReceiptData, TenancyData } from "../types";
+import { SavedDoc, SavedTemplate, AppMode, ITReceiptData, TenancyData, GeneralReceiptData } from "../types";
 import {
   getDocs, saveDoc, deleteDoc,
   getTemplates, saveTemplate, deleteTemplate, exportTemplate, importTemplate,
@@ -13,7 +13,7 @@ import {
 
 interface Props {
   mode: AppMode;
-  currentData: ITReceiptData | TenancyData;
+  currentData: ITReceiptData | TenancyData | GeneralReceiptData;
   onLoadDoc: (doc: SavedDoc) => void;
   onApplyTemplate: (tpl: SavedTemplate) => void;
   onNewDoc: () => void;
@@ -78,7 +78,8 @@ export default function SavedPanel({ mode, currentData, onLoadDoc, onApplyTempla
   const toast$ = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const handleSaveDoc = () => {
-    const name = docName.trim() || `${mode === "invoice" ? "Invoice" : "Receipt"} · ${new Date().toLocaleDateString("en-GB")}`;
+    const modeLabel = mode === "invoice" ? "Invoice" : mode === "tenancy" ? "Rent Receipt" : "Receipt";
+    const name = docName.trim() || `${modeLabel} · ${new Date().toLocaleDateString("en-GB")}`;
     saveDoc({ id: Date.now().toString(), mode, name, savedAt: new Date().toISOString(), data: currentData });
     setDocName(""); refresh(); toast$("Saved ✓");
   };
@@ -96,8 +97,8 @@ export default function SavedPanel({ mode, currentData, onLoadDoc, onApplyTempla
     e.target.value = "";
   };
 
-  const modeIcon  = mode === "invoice" ? <FileText size={13}/> : <Home size={13}/>;
-  const modeColor = mode === "invoice" ? "var(--accent)" : "var(--green)";
+  const modeIcon  = mode === "invoice" ? <FileText size={13}/> : mode === "tenancy" ? <Home size={13}/> : <ShoppingBag size={13}/>;
+  const modeColor = mode === "invoice" ? "var(--accent)" : mode === "tenancy" ? "var(--green)" : "var(--purple)";
   const filteredDocs = docs.filter(d => d.mode === mode);
   const filteredTpls = templates.filter(t => t.mode === mode);
 
@@ -136,7 +137,7 @@ export default function SavedPanel({ mode, currentData, onLoadDoc, onApplyTempla
                   <div style={{ fontSize: 12, fontWeight: 700, color: "#f97316" }}>Unsaved draft</div>
                   <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 1 }}>Auto-saved {timeAgo((draft as { savedAt: string }).savedAt)}</div>
                 </div>
-                <button onClick={() => { onLoadDoc({ id:"draft", mode, name:"Draft", savedAt: (draft as {savedAt:string}).savedAt, data: draft.data as ITReceiptData|TenancyData }); toast$("Draft restored"); }}
+                <button onClick={() => { onLoadDoc({ id:"draft", mode, name:"Draft", savedAt: (draft as {savedAt:string}).savedAt, data: draft.data as ITReceiptData|TenancyData|GeneralReceiptData }); toast$("Draft restored"); }}
                   style={{ fontSize: 11, fontWeight: 700, color: "#f97316", background: "none", border: "1px solid rgba(249,115,22,0.4)", borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontFamily: "inherit" }}>
                   Restore
                 </button>
