@@ -191,6 +191,11 @@ export const T = {
     pGrTotal: "Total",
     pGrTax: "Tax",
     pGrThankYou: "Thank you for your business!",
+    pGrAmount: "Amount",
+    pGrSeller: "Seller",
+    pGrPayment: "Payment",
+    pDescription: "Description",
+    pPaid: "Paid",
   },
 
   fr: {
@@ -364,6 +369,11 @@ export const T = {
     pGrTotal: "Total",
     pGrTax: "Taxe",
     pGrThankYou: "Merci de votre confiance!",
+    pGrAmount: "Montant",
+    pGrSeller: "Vendeur",
+    pGrPayment: "Paiement",
+    pDescription: "Description",
+    pPaid: "Payé",
   },
 
   nl: {
@@ -537,6 +547,11 @@ export const T = {
     pGrTotal: "Totaal",
     pGrTax: "Belasting",
     pGrThankYou: "Bedankt voor uw aankoop!",
+    pGrAmount: "Bedrag",
+    pGrSeller: "Verkoper",
+    pGrPayment: "Betaling",
+    pDescription: "Omschrijving",
+    pPaid: "Betaald",
   },
 } as const;
 

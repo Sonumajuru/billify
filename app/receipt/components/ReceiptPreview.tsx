@@ -80,10 +80,10 @@ export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props)
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: `2px solid ${ac}` }}>
-                <th style={{ textAlign: "left", padding: "6px 0", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted }}>Description</th>
-                <th style={{ textAlign: "center", padding: "6px 0", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted, width: 48 }}>Qty</th>
-                <th style={{ textAlign: "right", padding: "6px 0", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted, width: 80 }}>Price</th>
-                <th style={{ textAlign: "right", padding: "6px 0", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted, width: 90 }}>Amount</th>
+                <th style={{ textAlign: "left", padding: "6px 0", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted }}>{tr.grItemDesc}</th>
+                <th style={{ textAlign: "center", padding: "6px 0", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted, width: 48 }}>{tr.qty}</th>
+                <th style={{ textAlign: "right", padding: "6px 0", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted, width: 80 }}>{tr.grPrice}</th>
+                <th style={{ textAlign: "right", padding: "6px 0", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted, width: 90 }}>{tr.pGrAmount}</th>
               </tr>
             </thead>
             <tbody>
@@ -131,15 +131,15 @@ export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props)
 
           {/* Payment info */}
           <div style={{ marginTop: 20, display: "flex", gap: 20, fontSize: 12, color: muted }}>
-            {data.paymentMethod && <span><strong style={{ color: tx }}>Paid via:</strong> {data.paymentMethod}</span>}
-            {data.paymentDate && <span><strong style={{ color: tx }}>On:</strong> {fmtDate(data.paymentDate)}</span>}
+            {data.paymentMethod && <span><strong style={{ color: tx }}>{tr.pPaidVia}</strong> {data.paymentMethod}</span>}
+            {data.paymentDate && <span><strong style={{ color: tx }}>{tr.pOn}</strong> {fmtDate(data.paymentDate)}</span>}
           </div>
 
           {data.notes && <div style={{ marginTop: 20, padding: "12px 16px", borderLeft: `3px solid ${ac}`, background: `${ac}0a`, borderRadius: "0 8px 8px 0", fontSize: 12, color: muted, lineHeight: 1.7 }}>{data.notes}</div>}
 
           {data.showSignature && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 32 }}>
-              {["Seller", "Customer"].map(s => (
+              {[tr.pGrSeller, tr.grBuyerSection].map(s => (
                 <div key={s}><div style={{ height: 1, background: "#e5e7eb", marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted }}>{s} {tr.pSignatureSuffix}</div></div>
               ))}
             </div>
@@ -195,7 +195,7 @@ export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props)
           {/* Seller / Buyer grid */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
             <div style={{ padding: "14px 16px", borderRadius: 12, border: `1px solid ${border}`, background: cardBg }}>
-              <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: ac, marginBottom: 8 }}>From</div>
+              <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: ac, marginBottom: 8 }}>{tr.pFrom}</div>
               <div style={{ fontWeight: 600, fontSize: 14, color: tx }}>{data.sellerName || data.sellerCompany || "—"}</div>
               {data.sellerPhone && <div style={{ fontSize: 11, color: muted, marginTop: 3 }}>{data.sellerPhone}</div>}
             </div>
@@ -208,7 +208,7 @@ export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props)
               </div>
             ) : (
               <div style={{ padding: "14px 16px", borderRadius: 12, border: `1px solid ${border}`, background: cardBg }}>
-                <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: ac, marginBottom: 8 }}>Payment</div>
+                <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: ac, marginBottom: 8 }}>{tr.pGrPayment}</div>
                 {data.paymentMethod && <div style={{ fontWeight: 600, fontSize: 13, color: tx }}>{data.paymentMethod}</div>}
                 {data.paymentDate && <div style={{ fontSize: 11, color: muted, marginTop: 3 }}>{fmtDate(data.paymentDate)}</div>}
               </div>
@@ -218,9 +218,9 @@ export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props)
           {/* Items */}
           <div style={{ marginBottom: 8 }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 60px 90px", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: ac, padding: "0 0 8px", borderBottom: `1px solid ${border}`, gap: 8 }}>
-              <span>Description</span>
-              <span style={{ textAlign: "center" }}>Qty</span>
-              <span style={{ textAlign: "right" }}>Amount</span>
+              <span>{tr.grItemDesc}</span>
+              <span style={{ textAlign: "center" }}>{tr.qty}</span>
+              <span style={{ textAlign: "right" }}>{tr.pGrAmount}</span>
             </div>
             {data.items.filter(i => i.description || parseFloat(i.rate) > 0).map(item => {
               const amount = (parseFloat(item.quantity)||0) * (parseFloat(item.rate)||0);
@@ -237,8 +237,8 @@ export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props)
           {/* Totals + summary */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 16 }}>
             <div style={{ fontSize: 12, color: muted }}>
-              {data.paymentMethod && data.buyerName && <div><strong style={{ color: muted }}>Paid via:</strong> {data.paymentMethod}</div>}
-              {data.paymentDate && data.buyerName && <div><strong style={{ color: muted }}>On:</strong> {fmtDate(data.paymentDate)}</div>}
+              {data.paymentMethod && data.buyerName && <div><strong style={{ color: muted }}>{tr.pPaidVia}</strong> {data.paymentMethod}</div>}
+              {data.paymentDate && data.buyerName && <div><strong style={{ color: muted }}>{tr.pOn}</strong> {fmtDate(data.paymentDate)}</div>}
             </div>
             <div style={{ padding: "16px 20px", borderRadius: 12, background: `${ac}18`, border: `1px solid ${ac}30`, textAlign: "right" }}>
               {totals.discount > 0 && (
@@ -262,7 +262,7 @@ export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props)
 
           {data.showSignature && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 28 }}>
-              {["Seller", "Customer"].map(s => (
+              {[tr.pGrSeller, tr.grBuyerSection].map(s => (
                 <div key={s}><div style={{ height: 1, background: border, marginBottom: 6 }} /><div style={{ fontSize: 10, color: muted }}>{s} {tr.pSignatureSuffix}</div></div>
               ))}
             </div>
@@ -311,7 +311,7 @@ export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props)
             {data.sellerEmail && <div style={{ fontSize: 12, color: muted }}>{data.sellerEmail}</div>}
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 22, fontWeight: 900, color: ac, fontFamily: "'Fraunces',serif", letterSpacing: -0.5 }}>Receipt</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: ac, fontFamily: "'Fraunces',serif", letterSpacing: -0.5 }}>{tr.pDocReceipt.charAt(0).toUpperCase() + tr.pDocReceipt.slice(1).toLowerCase()}</div>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, color: muted, marginTop: 2 }}>{data.receiptNumber || "RC-001"}</div>
             <div style={{ fontSize: 12, color: muted }}>{fmtDate(data.issueDate)}</div>
             <div style={{ marginTop: 8, display: "inline-flex", padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: statusBadge.bg, color: statusBadge.color }}>{st}</div>
@@ -331,7 +331,7 @@ export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props)
               {data.buyerPhone && <div style={{ fontSize: 12, color: muted }}>{data.buyerPhone}</div>}
             </div>
             <div style={{ padding: "12px 16px", borderRadius: 10, background: `${ac}0a`, border: `1px solid ${ac}20`, flex: 1 }}>
-              <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: ac, marginBottom: 6 }}>Payment</div>
+              <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: ac, marginBottom: 6 }}>{tr.pGrPayment}</div>
               {data.paymentMethod && <div style={{ fontWeight: 700, fontSize: 14, color: tx }}>{data.paymentMethod}</div>}
               {data.paymentDate && <div style={{ fontSize: 12, color: muted }}>{fmtDate(data.paymentDate)}</div>}
             </div>
@@ -341,10 +341,10 @@ export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props)
         {/* Items */}
         <div style={{ marginBottom: 8 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 60px 80px 90px", gap: 8, padding: "6px 0", borderBottom: `2px solid ${ac}20`, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: muted }}>
-            <span>Description</span>
-            <span style={{ textAlign: "center" }}>Qty</span>
-            <span style={{ textAlign: "right" }}>Price</span>
-            <span style={{ textAlign: "right" }}>Total</span>
+            <span>{tr.grItemDesc}</span>
+            <span style={{ textAlign: "center" }}>{tr.qty}</span>
+            <span style={{ textAlign: "right" }}>{tr.grPrice}</span>
+            <span style={{ textAlign: "right" }}>{tr.pGrTotal}</span>
           </div>
           {data.items.filter(i => i.description || parseFloat(i.rate) > 0).map(item => {
             const amount = (parseFloat(item.quantity)||0) * (parseFloat(item.rate)||0);
@@ -389,8 +389,8 @@ export default function ReceiptPreview({ data, previewRef, lang = "en" }: Props)
 
         {!data.buyerName && (
           <div style={{ marginTop: 16, fontSize: 12, color: muted }}>
-            {data.paymentMethod && <span><strong style={{ color: tx }}>Paid via:</strong> {data.paymentMethod}  </span>}
-            {data.paymentDate && <span><strong style={{ color: tx }}>On:</strong> {fmtDate(data.paymentDate)}</span>}
+            {data.paymentMethod && <span><strong style={{ color: tx }}>{tr.pPaidVia}</strong> {data.paymentMethod}  </span>}
+            {data.paymentDate && <span><strong style={{ color: tx }}>{tr.pOn}</strong> {fmtDate(data.paymentDate)}</span>}
           </div>
         )}
 
